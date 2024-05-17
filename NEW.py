@@ -86,4 +86,35 @@ root.ExecuteCommand(command_str)
 
 
 
- 
+
+def create_report_for_satellite(satellite, report_style, file_path, start_time, stop_time, time_step):
+    """
+    为指定卫星创建报告。
+    :param satellite: 卫星对象，自动从中提取实例名来构建路径
+    :param report_style: 报告样式
+    :param file_path: 报告文件保存路径
+    :param start_time: 报告开始时间
+    :param stop_time: 报告结束时间
+    :param time_step: 时间步长
+    """
+    # 获取卫星的完整路径
+    satellite_path = f"*/Satellite/{satellite.InstanceName}"
+
+    # 构建ReportCreate命令
+    command = f'ReportCreate {satellite_path} Type Save Style "{report_style}" File "{file_path}" TimePeriod "{start_time}" "{stop_time}" TimeStep {time_step}'
+
+    # 执行命令
+    root.ExecuteCommand(command)
+
+# 示例调用
+sat_list = root.CurrentScenario.Children.GetElements(STKObjects.eSatellite)
+satellite = sat_list[0]
+
+create_report_for_satellite(
+    satellite=satellite,
+    report_style="My Styles/fixed",
+    file_path=r"E:\\STK_file\\python\\newsats\\newsats.txt",  # 使用原始字符串或双反斜杠
+    start_time="1 Nov 2024 01:02:00.00",
+    stop_time="2 Nov 2024 03:04:00.00",
+    time_step="60.0"
+)
