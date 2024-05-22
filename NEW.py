@@ -72,8 +72,8 @@ semi_major_axis = "7200008.0"
 eccentricity = "0.0"
 inclination = "50"
 arg_of_perigee = "0.0"
-raan = "0.0"
-mean_anom = "60.0"
+raan = "10.0"
+mean_anom = "320.0"
 coord_epoch = None  # 如果需要，添加此参数
 
 command_str = create_set_state_command(object_path, propagator, start_time1, end_time1, step_size, coord_system, orbit_epoch, semi_major_axis, eccentricity, inclination, arg_of_perigee, raan, mean_anom, coord_epoch)
@@ -83,7 +83,104 @@ root.ExecuteCommand(command_str)
 
 
 
+ 
 
+constellation = scenario.Children.New(STKObjects.eConstellation, "test")
+
+
+constellation_interface = constellation.QueryInterface(STKObjects.IAgConstellation)
+
+#constellation_interface.Objects.Add("Satellite/LeoSat")
+
+
+sensor = satellite.Children.New(STKObjects.eSensor, "Mysensor")
+sensor2 = sensor.QueryInterface(STKObjects.IAgSensor)
+
+
+sensor2.SetPatternType(STKObjects.eSnSimpleConic)
+sensor2.CommonTasks.SetPatternSimpleConic(45.0, 5.0)  
+
+
+# add sensor to satellite
+command_str = 'Chains */Constellation/test Add */Satellite/LeoSat/Sensor/Mysensor'
+
+root.ExecuteCommand(command_str)
+
+
+
+
+
+
+#覆盖的定义，
+coverage_definition = scenario.Children.New(STKObjects.eCoverageDefinition, "MyCoverage")
+
+coverage_definition2 = coverage_definition.QueryInterface(STKObjects.IAgCoverageDefinition)
+
+grid = coverage_definition2.Grid
+
+grid.BoundsType = STKObjects.eBoundsLatLonRegion  # 设置边界类型为经纬度
+
+bounds = grid.Bounds.QueryInterface(STKObjects.IAgCvBoundsLatLonRegion)
+bounds.MinLatitude = 20  # 设置最小纬度
+bounds.MaxLatitude = 33  # 设置最大纬度
+bounds.MinLongitude = 103  # 设置最小经度
+bounds.MaxLongitude = 121  # 设置最大经度
+
+
+grid.ResolutionType = STKObjects.eResolutionLatLon
+
+Resolution = grid.Resolution.QueryInterface(STKObjects.IAgCvResolutionLatLon)
+Resolution.LatLon = 1
+
+
+
+assets = coverage_definition2.AssetList.QueryInterface(STKObjects.IAgCvAssetListCollection)
+assets.Add("Constellation/test")
+
+
+coverage_definition2.ComputeAccesses()
+
+
+figure_of_merit = coverage_definition.Children.New(STKObjects.eFigureOfMerit, "MyFOM")
+
+
+figure_of_merit2 = figure_of_merit.QueryInterface(STKObjects.IAgFigureOfMerit)
+
+figure_of_merit2.SetDefinitionType(STKObjects.eFmNumberOfAccesses)
+
+grid_inspector = figure_of_merit2.GridInspector.QueryInterface(STKObjects.IAgFmGridInspector)
+grid_inspector.SelectPoint(23.610, 110.5)
+
+
+
+point_fom_provider = grid_inspector.PointFOM.QueryInterface(STKObjects.IAgDataPrvTimeVar)
+
+point_fom_result = point_fom_provider.ExecSingle(start_time)
+
+
+# root.ExecuteCommand('Cov */CoverageDefinition/MyCoverage Grid PointGranularity LatLon 5')
+
+# root.ExecuteCommand('Cov */CoverageDefinition/MyCoverage Grid AreaOfInterest LatBounds 20 33')
+
+
+## 下述代码成功生成相应的文件
+coverage_name = "MyCoverage"
+fom_name = "MyFOM"
+report_style = "My Styles/mystyle"
+file_path = "E:/STK_file/python/newsats/Report.txt"  # 使用正斜杠而不是反斜杠
+
+start_time = "1 Nov 2024 01:02:00.00"
+end_time = "2 Nov 2024 03:04:00.00"
+time_step = 60  # 单位：秒
+
+# 构建ReportCreate命令
+command = (f'ReportCreate */CoverageDefinition/{coverage_name}/FigureOfMerit/{fom_name} Type Save '
+           f'Style "{report_style}" File "{file_path}" '
+           f'TimePeriod "{start_time}" "{end_time}" '
+           f'TimeStep {time_step}')
+
+
+root.ExecuteCommand(command)
 
 
 
