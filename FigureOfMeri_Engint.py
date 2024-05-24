@@ -1,3 +1,10 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Fri May 24 20:01:29 2024
+
+@author: yfh
+"""
+
 from comtypes.gen import STKObjects, STKUtil, AgStkGatorLib  # 从生成的库中获取STK的相关函数
 from comtypes.client import CreateObject, GetActiveObject, GetEvents, CoGetObject, ShowEvents # 导入生成和获取物体的库
 
@@ -6,13 +13,44 @@ import win32com.client
 
 
 
-uiApplication = CreateObject("STK11.Application")
+useStkEngine = True  # 是否需要使用STK Engine
+Read_Scenario = False # 是否需要读场景？若为False则新建一个场景
 
-uiApplication.Visible = True
+if useStkEngine:  # 如果使用STK Engine
+    # Launch STK Engine
+    print("Launching STK Engine...")
+    uiApplication = CreateObject("STKX11.Application")
 
-uiApplication.UserControl = True
+    # Disable graphics. The NoGraphics property must be set to true before the root object is created.
+    uiApplication.NoGraphics = True
 
-root = uiApplication.Personality2
+    # Create root object
+    root = CreateObject('AgStkObjects11.AgStkObjectRoot')
+
+else:  # 使用STK GUI界面
+    # Launch GUI
+    print("Launching STK...")
+    if not Read_Scenario:  # 如果需要新建场景
+        uiApplication = CreateObject("STK11.Application")
+    else:  # 获取当前场景
+        uiApplication = GetActiveObject("STK11.Application")
+    uiApplication.Visible = True # 可以看到GUI见面
+    uiApplication.UserControl = True  # 可以用鼠标和STK GUI交互
+
+    # Get root object
+    root = uiApplication.Personality2  # 获取root物体，很重要，所有的物体都是root的子物体
+
+
+
+
+
+#uiApplication = CreateObject("STK11.Application")
+
+# uiApplication.Visible = True
+
+# uiApplication.UserControl = True
+
+# root = uiApplication.Personality2
 
 root.NewScenario("python_star")
 
@@ -21,8 +59,6 @@ scenario = root.CurrentScenario
 scenario2 = scenario.QueryInterface(STKObjects.IAgScenario)
 
 
-from datetime import datetime, timedelta
-import win32com.client
 
 
 def create_set_state_command(object_path, propagator, start_time, end_time, step_size, coord_system, orbit_epoch, semi_major_axis, eccentricity, inclination, arg_of_perigee, raan, mean_anom, coord_epoch=None):
@@ -51,7 +87,7 @@ root.ExecuteCommand(command_str)
 
 
 
-root.Rewind()
+#root.Rewind()
 
 
 target = scenario.Children.New(STKObjects.eTarget , "GroundTarget");
@@ -181,7 +217,7 @@ add_sensors_to_constellation(root,processed_satellite_names,constellation)
 coverage_name = "MyCoverage"
 
 #覆盖的定义，
-coverage_definition = scenario.Children.New(STKObjects.eCoverageDefinition, "MyCoverage")
+coverage_definition = scenario.Children.New(STKObjects.eCoverageDefinition,coverage_name)
 
 coverage_definition2 = coverage_definition.QueryInterface(STKObjects.IAgCoverageDefinition)
 
@@ -210,7 +246,7 @@ assets.Add("Constellation/test")
 coverage_definition2.ComputeAccesses()
 
 fom_name =  "MyFOM"
-figure_of_merit = coverage_definition.Children.New(STKObjects.eFigureOfMerit, "MyFOM")
+figure_of_merit = coverage_definition.Children.New(STKObjects.eFigureOfMerit,fom_name)
 
 
 figure_of_merit2 = figure_of_merit.QueryInterface(STKObjects.IAgFigureOfMerit)
@@ -242,8 +278,7 @@ fom_name = "MyFOM"
 report_style = "My Styles/mystyle"
 file_path = "E:/STK_file/python/newsats/Report.txt"  # 使用正斜杠而不是反斜杠
 
-start_time = "1 Nov 2024 01:02:00.00"
-end_time = "2 Nov 2024 03:04:00.00"
+
 time_step = 60  # 单位：秒
 
 # 构建ReportCreate命令
@@ -257,40 +292,16 @@ root.ExecuteCommand(command)
 
 
 
+if useStkEngine: 
+
+     uiApplication.Terminate()
+     uiApplication=None
+     root=None
+    
+
+else:
+    print()
+
+   
 
 
-
-
-
-
-def create_report_for_satellite(satellite, report_style, file_path, start_time, stop_time, time_step):
-    """
-    为指定卫星创建报告。
-    :param satellite: 卫星对象，自动从中提取实例名来构建路径
-    :param report_style: 报告样式
-    :param file_path: 报告文件保存路径
-    :param start_time: 报告开始时间
-    :param stop_time: 报告结束时间
-    :param time_step: 时间步长
-    """
-    # 获取卫星的完整路径
-    satellite_path = f"*/Satellite/{satellite.InstanceName}"
-
-    # 构建ReportCreate命令
-    command = f'ReportCreate {satellite_path} Type Save Style "{report_style}" File "{file_path}" TimePeriod "{start_time}" "{stop_time}" TimeStep {time_step}'
-
-    # 执行命令
-    root.ExecuteCommand(command)
-
-# 示例调用
-sat_list = root.CurrentScenario.Children.GetElements(STKObjects.eSatellite)
-satellite = sat_list[0]
-
-create_report_for_satellite(
-    satellite=satellite,
-    report_style="My Styles/fixed",
-    file_path=r"E:\\STK_file\\python\\newsats\\newsats.txt",  # 使用原始字符串或双反斜杠
-    start_time="1 Nov 2024 01:02:00.00",
-    stop_time="2 Nov 2024 03:04:00.00",
-    time_step="60.0"
-)
