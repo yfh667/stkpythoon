@@ -16,7 +16,7 @@ function createSatellite(root, scenario, params)
 
     % 参数验证
     requiredFields = {'satelliteName', 'perigeeAlt', 'apogeeAlt', 'inclination', ...
-                      'argOfPerigee', 'ascNodeValue', 'locationValue'};
+                      'argOfPerigee', 'RAAN', 'Anomaly'};
     for i = 1:length(requiredFields)
         if ~isfield(params, requiredFields{i})
             error('参数结构体缺少必需的字段：%s', requiredFields{i});
@@ -34,16 +34,18 @@ function createSatellite(root, scenario, params)
 
     % 设置轨道参数类型
     keplerian.SizeShapeType = 'eSizeShapeAltitude';
-    keplerian.LocationType = 'eLocationTrueAnomaly';
-    keplerian.Orientation.AscNodeType = 'eAscNodeLAN';
+    keplerian.LocationType = 'eLocationMeanAnomaly';
+    keplerian.Orientation.AscNodeType = 'eAscNodeRAAN';
 
     % 设置轨道参数
-    keplerian.SizeShape.PerigeeAltitude = params.perigeeAlt;
-    keplerian.SizeShape.ApogeeAltitude = params.apogeeAlt;
-    keplerian.Orientation.Inclination = params.inclination;
-    keplerian.Orientation.ArgOfPerigee = params.argOfPerigee;
-    keplerian.Orientation.AscNode.Value = params.ascNodeValue;
-    keplerian.Location.Value = params.locationValue;
+% 设置轨道参数
+keplerian.SizeShape.PerigeeAltitude = params.perigeeAlt;    % 近地点高度：卫星轨道最接近地球的点的高度，单位通常为公里。
+keplerian.SizeShape.ApogeeAltitude = params.apogeeAlt;      % 远地点高度：卫星轨道最远离地球的点的高度，单位通常为公里。
+keplerian.Orientation.Inclination = params.inclination;    % 轨道倾角：卫星轨道平面与地球赤道平面之间的夹角，单位为度。
+keplerian.Orientation.ArgOfPerigee = params.argOfPerigee;  % 近地点幅角：从升交点至近地点的角距离，单位为度。
+keplerian.Orientation.AscNode.Value = params.RAAN; % 升交点赤经或经度：升交点在赤道上的位置，单位为度。
+keplerian.Location.Value = params.Anomaly;           % 平近点角：卫星相对于近地点的平均角位置，单位为度。
+
 
     % 应用初始状态
     satellite.Propagator.InitialState.Representation.Assign(keplerian);

@@ -119,14 +119,47 @@ function MultiModifyReport(type, path)
     % 获取指定路径下所有指定类型的文件
     files = dir(fullfile(path, ['*.', txt]));
     
+    % 处理每一个文件
+    for k = 1:length(files)
+        filename = files(k).name;
+        filePath = fullfile(path, filename);
+        
+        % 读取文件内容
+        fid = fopen(filePath, 'r');
+        data = textscan(fid, '%s %f %f %f', 'HeaderLines', 5);
+        fclose(fid);
+        
+        % 解析时间和数据
+        times = data{1};
+        x = data{2};
+        y = data{3};
+        z = data{4};
+        
+        % 计算时间差
+        refTime = datetime(times{1}, 'InputFormat', 'dd MMM yyyy HH:mm:ss.SSS');
+        timeDiffs = seconds(datetime(times, 'InputFormat', 'dd MMM yyyy HH:mm:ss.SSS') - refTime);
+        
+        % 单位转换，从公里到米
+        x = x * 1000;
+        y = y * 1000;
+        z = z * 1000;
+        
+        % 保存修改后的数据
+        newFilename = fullfile(savePath, [filename(1:end-length(type)-1), '_modify.', type]);
+        fid = fopen(newFilename, 'w');
+        fprintf(fid, 'Time (s)             x (m)          y (m)        z (m)\n');
+        fprintf(fid, '----------------    ------------    -----------    ---------\n');
+        for i = 1:length(timeDiffs)
+            fprintf(fid, '%d    %.6f    %.6f    %.6f\n', timeDiffs(i), x(i), y(i), z(i));
+        end
+        fclose(fid);
+    end
 end
 
 
 
-function ModifyReport(input_file,output_file)
+function ModifyReport(type,name, path)
      % 打开输入和输出文件
-     
-     
     fin = fopen(input_file, 'r');
     fout = fopen(output_file, 'w');
 
