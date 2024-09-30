@@ -16,11 +16,14 @@ end
 StartTime  =  '24 Feb 2012 18:00:00.000';
 StopTime =  '25 Feb 2012 18:00:00.000';
 scenario = root.Children.New('eScenario','MATLAB_PredatorMission');
-scenario.SetTimePeriod('24 Feb 2012 16:00:00.000','25 Feb 2012 16:00:00.000');
+scenario.SetTimePeriod(StartTime,StopTime);
 scenario.StartTime = StartTime;
 scenario.StopTime = StopTime;
 
+
 root.ExecuteCommand('Animate * Reset');
+
+
 
 % here we get the facuilt
 facility = scenario.Children.New('eFacility','GroundStation1');
@@ -93,7 +96,7 @@ reportParams.reportStyle = 'fixed';  % 使用有效的报告样式
 reportParams.filePath = 'E:/STK_file/sats';
 reportParams.startTime = '24 Feb 2012 16:00:00.000';
 reportParams.stopTime = '25 Feb 2012 16:00:00.000';
-reportParams.timeStep = 60;
+reportParams.timeStep = 1;
 % name = 'Satellite1'
 
 % get the satellite name so we could print the waypoint
@@ -113,10 +116,27 @@ reportParams.reportStyle = 'fixed';  % 使用有效的报告样式
 reportParams.filePath = 'E:/STK_file/stations';
 reportParams.startTime = StartTime;
 reportParams.stopTime =StopTime;
-reportParams.timeStep = 60;
+reportParams.timeStep = 1;
 % name = 'GroundStation'
 %  ExportRe.RePort(root, 'Facility',name,reportParams);
 station2 = station();
 station_names =station2.getStation_names(scenario);
 ExportRe.MultilRePort(root,'Facility', station_names,reportParams);
 
+
+ExportRe.MultiModifyReport('Station','E:/STK_file/stations')
+% 用python脚本去后处理，matlab太慢了
+%ExportRe.MultiModifyReport('Satellite', 'E:/STK_file/sats')
+
+% 初始化 STK
+if USE_ENGINE
+
+    %------% 关闭engine
+    % 1. 释放根对象（AgStkObjectRoot）
+    delete(root);
+    clear root;
+    % 3. 释放 STKXApplication 对象
+    delete(STKXApplication);
+    clear STKXApplication;
+
+end

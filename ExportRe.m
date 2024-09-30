@@ -92,7 +92,7 @@ function MultilRePort(root, type, names, params)
     start_time = params.startTime;
     stop_time = params.stopTime;
     time_step = params.timeStep;
-    file_path
+    
 
     % 确保目录存在
 
@@ -116,56 +116,95 @@ function MultiModifyReport(type, path)
         mkdir(savePath);
     end
     
+ % 检查和创建子目录
+
+    if ~exist(savePath, 'dir')
+        mkdir(savePath);
+    end
+    
     % 获取指定路径下所有指定类型的文件
-    files = dir(fullfile(path, ['*.', txt]));
+    files = dir(fullfile(path, ['*.', 'txt']));
+    
+    % 循环处理每个文件
+    for k = 1:length(files)
+        input_file = fullfile(path, files(k).name);
+        output_file = fullfile(savePath, files(k).name);
+        input_file
+        output_file
+        ModifyReport(type,input_file, output_file);
+    end
     
 end
 
 
-
-function ModifyReport(input_file,output_file)
-     % 打开输入和输出文件
-     
-     
+function ModifyReport(type, input_file, output_file)
+    % 打开输入和输出文件
     fin = fopen(input_file, 'r');
+    if fin == -1
+        error('Failed to open the input file.');
+    end
+    
     fout = fopen(output_file, 'w');
-
-    % 读取整个文件到一个cell数组中
-    data_lines = textscan(fin, '%s', 'Delimiter', '\n');
-    data_lines = data_lines{1};
-    fclose(fin);  % 关闭输入文件
-
-    % 解析第一条数据行来获取起始时间
-    first_line_parts = strsplit(data_lines{8}, ' ');
-    start_datetime_str = strjoin(first_line_parts(1:4), ' ');
-
-    % 转换起始时间为datetime类型
-    start_time = datetime(start_datetime_str, 'InputFormat', 'dd MMM yyyy HH:mm:ss.SSS', 'Locale', 'en_US');
-
-    % 跳过文件头部7行，处理剩余数据行
-    for i = 8:length(data_lines)
-        parts = strsplit(strtrim(data_lines{i}), ' ');
-        if length(parts) < 7  % 确保行包含足够的数据
-            continue;
-        end
-
-        % 合并日期和时间字符串，并转换为datetime对象
-        current_datetime_str = strjoin(parts(1:4), ' ');
-        current_time = datetime(current_datetime_str, 'InputFormat', 'dd MMM yyyy HH:mm:ss.SSS', 'Locale', 'en_US');
-        time_diff = current_time - start_time;
-        seconds_since_start = seconds(time_diff);
-
-        % 提取坐标数据并进行单位转换（千米到米）
-        coords = str2double(parts(5:7)) * 1000;
-        coords_str = sprintf('%.3f %.3f %.3f', coords);
-
-        % 写入输出文件
-        fprintf(fout, '%d %s\n', seconds_since_start, coords_str);
+    if fout == -1
+        fclose(fin);  % 确保在退出前关闭已打开的输入文件
+        error('Failed to open the output file.');
     end
 
+    if strcmp(type, 'Satellite')
+        % 读取整个文件到一个cell数组中
+        data_lines = textscan(fin, '%s', 'Delimiter', '\n');
+        data_lines = data_lines{1};
+        fclose(fin);  % 处理完毕，关闭输入文件
+
+        % 解析第一条数据行来获取起始时间
+        first_line_parts = strsplit(data_lines{8}, ' ');
+        start_datetime_str = strjoin(first_line_parts(1:4), ' ');
+
+        % 转换起始时间为datetime类型
+        start_time = datetime(start_datetime_str, 'InputFormat', 'dd MMM yyyy HH:mm:ss.SSS', 'Locale', 'en_US');
+
+        % 跳过文件头部7行，处理剩余数据行
+        for i = 8:length(data_lines)
+            parts = strsplit(strtrim(data_lines{i}), ' ');
+            if length(parts) < 7  % 确保行包含足够的数据
+                continue;
+            end
+
+            % 合并日期和时间字符串，并转换为datetime对象
+            current_datetime_str = strjoin(parts(1:4), ' ');
+            current_time = datetime(current_datetime_str, 'InputFormat', 'dd MMM yyyy HH:mm:ss.SSS', 'Locale', 'en_US');
+            time_diff = current_time - start_time;
+            seconds_since_start = seconds(time_diff);
+
+            % 提取坐标数据并进行单位转换（千米到米）
+            coords = str2double(parts(5:7)) * 1000;
+            coords_str = sprintf('%.3f %.3f %.3f', coords);
+
+            % 写入输出文件
+            fprintf(fout, '%d %s\n', seconds_since_start, coords_str);
+        end
+    elseif strcmp(type, 'Station')
+        % 读取并跳过头部行
+        for i = 1:7
+            fgetl(fin);
+        end
+        
+        % 读取第一条数据行
+        first_data_line = fgetl(fin);
+        fclose(fin);  % 处理完毕，关闭输入文件
+
+        % 分割第一条数据行以提取坐标数据
+        parts = strsplit(strtrim(first_data_line));
+        
+        % 提取x, y, z坐标
+        x = str2double(parts{5}) * 1000;
+        y = str2double(parts{6}) * 1000;
+        z = str2double(parts{7}) * 1000;
+
+        % 将数据写入输出文件，以空格分隔，所有数据在一行
+        fprintf(fout, '%.6f %.6f %.6f', x, y, z);
+    end
+    
     fclose(fout);  % 关闭输出文件
-
-
-   
-   
+    disp('Data has been written to the output file.');
 end
