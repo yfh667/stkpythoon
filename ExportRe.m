@@ -2,8 +2,12 @@
 function F = ExportRe
     F.RePort = @RePort;
   F.MultilRePort = @MultilRePort;
+    F.MultilRePort_Para = @MultilRePort_Para;
+
     F.ModifyReport = @ModifyReport;
   F.MultiModifyReport = @MultiModifyReport;
+  
+  
 end
 function RePort(root,  type, name,params)
     % 生成指定对象的报告并保存到指定文件
@@ -63,7 +67,44 @@ function RePort(root,  type, name,params)
     end
 end
 
+function MultilRePort_Para(root, type, names, params)
+    % 并行生成指定对象的报告并保存到指定文件
+    %
+    % 参数：
+    %   - root: STK 的根对象（AgStkObjectRoot）
+    %   - type: 对象类型，字符串，例如 'Satellite'、'Facility' 等
+    %   - names: 包含多个对象名称的单元数组
+    %   - params: 包含报告参数的结构体，必须包含以下字段：
+    %       - reportStyle: 报告样式名称
+    %       - filePath: 报告文件的保存路径
+    %       - startTime: 报告的开始时间，格式为 'DD MMM YYYY HH:MM:SS.SSS'
+    %       - stopTime: 报告的结束时间，格式同上
+    %       - timeStep: 时间步长，单位为秒
 
+    % 参数验证
+    requiredFields = {'reportStyle', 'filePath', 'startTime', 'stopTime', 'timeStep'};
+    for i = 1:length(requiredFields)
+        if ~isfield(params, requiredFields{i})
+            error('参数结构体缺少必需的字段：%s', requiredFields{i});
+        end
+    end
+
+    % 确保目录存在
+    if ~exist(params.filePath, 'dir')
+        mkdir(params.filePath);
+    end
+
+    % 使用 parfor 并行处理每个对象
+    parfor i = 1:length(names)
+        try
+            object_name = names{i};  % 获取当前的对象名称
+            RePort(root, type, object_name, params);
+        catch ME
+            disp(['生成报告时发生错误，目标对象：', names{i}]);
+            disp(ME.message);
+        end
+    end
+end
 function MultilRePort(root, type, names, params)
     % 生成指定对象的报告并保存到指定文件
     %

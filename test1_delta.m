@@ -98,7 +98,9 @@ ExportRe = ExportRe();
 %ExportRe.RePort(root, name,'Satellite',reportParams);
 
 
-ExportRe.MultilRePort(root,'Satellite', satellite_names,reportParams);
+%ExportRe.MultilRePort(root,'Satellite', satellite_names,reportParams);
+%我们采用并行，注意，目前只在matlb端并行了，实际上是stk自己也可以并行，以后再折腾
+ExportRe.MultilRePort_Para(root,'Satellite', satellite_names,reportParams);
 
  
 % 用python脚本去后处理，matlab太慢了
