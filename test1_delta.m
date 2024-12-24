@@ -1,6 +1,6 @@
 
 % 设置是否使用 STK Engine
-USE_ENGINE = false;
+USE_ENGINE = true;
 
 % 初始化 STK
 if USE_ENGINE
@@ -20,21 +20,23 @@ scenario.SetTimePeriod(StartTime,StopTime);
 scenario.StartTime = StartTime;
 scenario.StopTime = StopTime;
 
-%设置动画轴
-root.ExecuteCommand('Animate * Reset');
+if USE_ENGINE
+    % 在 USE_ENGINE 为 true 的情况下执行的逻辑
+    % 添加你的逻辑代码
+else
+    % 当 USE_ENGINE 为 false 时，执行复位动画命令
+    try
+        root.ExecuteCommand('Animate * Reset');
+        disp('动画已复位成功');
+    catch ME
+        disp('动画复位失败:');
+        disp(ME.message);
+    end
+end
 
 
 
-%设置地面设施
-facility = scenario.Children.New('eFacility','GroundStation1');
-facility.Position.AssignGeodetic(0.75,101,0);
-
-facility = scenario.Children.New('eFacility','GroundStation2');
-facility.Position.AssignGeodetic(0.64,112,0);
-
-facility = scenario.Children.New('eFacility','GroundStation3');
-facility.Position.AssignGeodetic(10,112,0);
-
+ 
 
 %设置种子卫星
 seedsatename = 'horizontal'
@@ -42,9 +44,9 @@ seedsatename = 'horizontal'
 %这里采用结构化去赋值，方便管理
 params = struct();
 params.satelliteName = seedsatename;
-params.perigeeAlt = 500;  % km
-params.apogeeAlt = 500;
-params.inclination = 0;
+params.perigeeAlt = 1000;  % km
+params.apogeeAlt = 1000;
+params.inclination =53;
 params.argOfPerigee = 0;
 params.RAAN = 0;
 params.Anomaly = 0;
@@ -56,33 +58,22 @@ sat.createSatellite(root, scenario, params);
 % 定义 Walker 星座参数
 params_constellation = struct();
 params_constellation.seedSatelliteName =seedsatename;          % 种子卫星名称
-params_constellation.numPlanes = 5;                             % 轨道平面数量
-params_constellation.numSatsPerPlane = 20;                       % 每个平面的卫星数量
-params_constellation.interPlaneTrueAnomalyIncrement = 50;       % 平面间真近点角增量，度
+params_constellation.numPlanes = 10;                             % 轨道平面数量
+params_constellation.numSatsPerPlane =18;                       % 每个平面的卫星数量
+params_constellation.interPlanePhaseIncrement = 0;
+
  
+ 
+
+
 % 调用函数来创建 Walker 星座
-sat.createWalkerConstellation(root, params_constellation);
+sat.createWalkerConstellation_Delta(root, params_constellation);
 %we finish the waler ,so we need delet  the seed satellite
  root.ExecuteCommand(['Unload / */Satellite/' seedsatename]);
 
 
 
-
-seedsatename2 = 'vertical'
-%we set the seed satellite
-params = struct();
-params.satelliteName = seedsatename2;
-params.perigeeAlt = 500;  % km
-params.apogeeAlt = 500;
-params.inclination = 90;
-params.argOfPerigee = 0;
-params.RAAN = 0;
-params.Anomaly = 0;
-% we set up the seed2 satellite
-sat.createSatellite(root, scenario, params);
-params_constellation.seedSatelliteName =seedsatename2;          % 种子卫星名称
-sat.createWalkerConstellation(root, params_constellation);
-root.ExecuteCommand(['Unload / */Satellite/' seedsatename2]);
+ 
 
 
 
@@ -93,7 +84,8 @@ root.ExecuteCommand(['Unload / */Satellite/' seedsatename2]);
 reportParams = struct();
 %reportParams.satelliteName = 'Satellite1';
 reportParams.reportStyle = 'fixed';  % 使用有效的报告样式
-reportParams.filePath = 'E:/STK_file/sats';
+reportParams.filePath = 'C:/usrspace/stkfile/matlabfile';
+ 
 reportParams.startTime = '24 Feb 2012 16:00:00.000';
 reportParams.stopTime = '25 Feb 2012 16:00:00.000';
 reportParams.timeStep = 1;
@@ -108,23 +100,7 @@ ExportRe = ExportRe();
 
 ExportRe.MultilRePort(root,'Satellite', satellite_names,reportParams);
 
-
-
-
-reportParams = struct();
-reportParams.reportStyle = 'fixed';  % 使用有效的报告样式
-reportParams.filePath = 'E:/STK_file/stations';
-reportParams.startTime = StartTime;
-reportParams.stopTime =StopTime;
-reportParams.timeStep = 1;
-% name = 'GroundStation'
-%  ExportRe.RePort(root, 'Facility',name,reportParams);
-station2 = station();
-station_names =station2.getStation_names(scenario);
-ExportRe.MultilRePort(root,'Facility', station_names,reportParams);
-
-
-ExportRe.MultiModifyReport('Station','E:/STK_file/stations')
+ 
 % 用python脚本去后处理，matlab太慢了
 %ExportRe.MultiModifyReport('Satellite', 'E:/STK_file/sats')
 

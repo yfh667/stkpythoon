@@ -3,6 +3,7 @@
 function F = sat
     F.createSatellite = @createSatellite;
     F.createWalkerConstellation=@createWalkerConstellation;
+    F.createWalkerConstellation_Delta=@createWalkerConstellation_Delta;
     F.getSatelliteNames = @getSatelliteNames;
 end
 
@@ -54,7 +55,7 @@ keplerian.Location.Value = params.Anomaly;           % Æ½½üµã½Ç£ºÎÀĞÇÏà¶ÔÓÚ½üµØµ
     satellite.Propagator.Propagate;
 end
 
-
+%walkerĞÇ×ùÒ²ÓĞ¶à¸öÀàĞÍ£¬ÏÂÃæµÄÊÇcustomÀàĞÍ
 function createWalkerConstellation(root, params)
     % ´´½¨ Walker ĞÇ×ù
     %
@@ -103,7 +104,57 @@ function createWalkerConstellation(root, params)
         disp(ME.message);
     end
 end
+%ÏÂÃæÊÇdeltaÀàĞÍ
+function createWalkerConstellation_Delta(root, params)
+    % ´´½¨ Walker ĞÇ×ù£¨Delta ÀàĞÍ£©
+    %
+    % ²ÎÊı£º
+    %   - root: STK µÄ¸ù¶ÔÏó£¨AgStkObjectRoot£©
+    %   - params: °üº¬ Walker ĞÇ×ù²ÎÊıµÄ½á¹¹Ìå£¬±ØĞë°üº¬ÒÔÏÂ×Ö¶Î£º
+    %       - seedSatelliteName: ÖÖ×ÓÎÀĞÇÃû³Æ
+    %       - numPlanes: ¹ìµÀÆ½ÃæÊıÁ¿
+    %       - numSatsPerPlane: Ã¿¸öÆ½ÃæµÄÎÀĞÇÊıÁ¿
+    %       - interPlanePhaseIncrement: Æ½Ãæ¼äµÄÏàÎ»ÔöÁ¿£¨ÒÔ¹ìµÀ²ÛÎªµ¥Î»£©
+    
+    % ²ÎÊıÑéÖ¤
+    requiredFields = {'seedSatelliteName', 'numPlanes', 'numSatsPerPlane', 'interPlanePhaseIncrement'};
+    for i = 1:length(requiredFields)
+        if ~isfield(params, requiredFields{i})
+            error('²ÎÊı½á¹¹ÌåÈ±ÉÙ±ØĞèµÄ×Ö¶Î£º%s', requiredFields{i});
+        end
+    end
 
+    % ´Ó²ÎÊı½á¹¹ÌåÖĞ»ñÈ¡²ÎÊı
+    seed_satellite_path = ['*/Satellite/' params.seedSatelliteName];
+    num_planes = params.numPlanes;
+    num_sats_per_plane = params.numSatsPerPlane;
+    inter_plane_phase_increment = params.interPlanePhaseIncrement;
+
+    % ÑéÖ¤ interPlanePhaseIncrement ÖµÊÇ·ñºÏ·¨
+    if inter_plane_phase_increment >= num_planes
+        error('InterPlanePhaseIncrement ±ØĞëĞ¡ÓÚ NumPlanes¡£');
+    end
+
+    % ¹¹½¨ Walker ÃüÁî×Ö·û´®
+    command = ['Walker ' seed_satellite_path ...
+        ' Type Delta ' ...
+        ' NumPlanes ' num2str(num_planes) ...
+        ' NumSatsPerPlane ' num2str(num_sats_per_plane) ...
+        ' InterPlanePhaseIncrement ' num2str(inter_plane_phase_increment)];
+    
+    % ´òÓ¡ÃüÁîÒÔ¹©µ÷ÊÔ
+    disp('Ö´ĞĞµÄÃüÁî£º');
+    disp(command);
+    
+    % Ö´ĞĞ Walker ÃüÁî
+    try
+        root.ExecuteCommand(command);
+        disp('Walker ĞÇ×ù´´½¨³É¹¦¡£');
+    catch ME
+        disp('Ö´ĞĞ Walker ÃüÁîÊ±·¢Éú´íÎó£º');
+        disp(ME.message);
+    end
+end
 
 function satellite_names = getSatelliteNames(scenario)
     % »ñÈ¡¸ø¶¨³¡¾°ÖĞµÄËùÓĞÎÀĞÇÃû³Æ
