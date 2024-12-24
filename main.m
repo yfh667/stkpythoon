@@ -12,7 +12,7 @@ else
     app = actxserver('STK11.application');
     root = app.Personality2; 
 end
-
+%设置senario的时间
 StartTime  =  '24 Feb 2012 18:00:00.000';
 StopTime =  '25 Feb 2012 18:00:00.000';
 scenario = root.Children.New('eScenario','MATLAB_PredatorMission');
