@@ -36,8 +36,6 @@ end
 
 
 
- 
-
 %设置种子卫星
 seedsatename = 'horizontal'
 %we set the seed satellite
@@ -54,33 +52,23 @@ params.Anomaly = 0;
 sat = sat();
 sat.createSatellite(root, scenario, params);
 
-
-% 定义 Walker 星座参数
-params_constellation = struct();
-params_constellation.seedSatelliteName =seedsatename;          % 种子卫星名称
-params_constellation.numPlanes = 10;                             % 轨道平面数量
-params_constellation.numSatsPerPlane =18;                       % 每个平面的卫星数量
-params_constellation.interPlanePhaseIncrement = 0;
-
- 
- 
-
-
-% 调用函数来创建 Walker 星座
-sat.createWalkerConstellation_Delta(root, params_constellation);
-%we finish the waler ,so we need delet  the seed satellite
- root.ExecuteCommand(['Unload / */Satellite/' seedsatename]);
-
+%设置种子卫星
+seedsatename = 'horizontal2'
+%we set the seed satellite
+%这里采用结构化去赋值，方便管理
+params = struct();
+params.satelliteName = seedsatename;
+params.perigeeAlt = 1000;  % km
+params.apogeeAlt = 1000;
+params.inclination =53;
+params.argOfPerigee = 0;
+params.RAAN = 10;
+params.Anomaly =20;
+%we set the first seed1 satellite
+sat = sat();
+sat.createSatellite(root, scenario, params);
 
 
- 
-
-
-
-%we get the report
-% Satellite
-% Facility
-% 定义报告参数
 reportParams = struct();
 %reportParams.satelliteName = 'Satellite1';
 reportParams.reportStyle = 'fixed';  % 使用有效的报告样式
@@ -89,7 +77,6 @@ reportParams.filePath = 'C:/usrspace/stkfile/matlabfile';
 reportParams.startTime = '24 Feb 2012 16:00:00.000';
 reportParams.stopTime = '25 Feb 2012 16:00:00.000';
 reportParams.timeStep = 1;
-% name = 'Satellite1'
 
 % get the satellite name so we could print the waypoint
 satellite_names =sat.getSatelliteNames(scenario);
@@ -102,22 +89,3 @@ ExportRe = ExportRe();
 %我们采用并行，注意，目前只在matlb端并行了，实际上是stk自己也可以并行，以后再折腾
 ExportRe.MultilRePort_Para(root,'Satellite', satellite_names,reportParams);
 
- % 
-% 用python脚本去后处理，matlab太慢了
-%ExportRe.MultiModifyReport('Satellite', 'E:/STK_file/sats')
-%
-% 初始化 STK
-
- 
-
-if USE_ENGINE
-
-    %------% 关闭engine
-    % 1. 释放根对象（AgStkObjectRoot）
-    delete(root);
-    clear root;
-    % 3. 释放 STKXApplication 对象
-    delete(STKXApplication);
-    clear STKXApplication;
-
-end
