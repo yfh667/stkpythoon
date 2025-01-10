@@ -51,7 +51,7 @@ params.argOfPerigee = 0;
 params.RAAN = 0;
 params.Anomaly = 0;
 %we set the first seed1 satellite
-sat = sat();
+sat = satsetup();
 sat.createSatellite(root, scenario, params);
 
 

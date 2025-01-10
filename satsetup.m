@@ -5,6 +5,12 @@ function F = sat
     F.createWalkerConstellation=@createWalkerConstellation;
     F.createWalkerConstellation_Delta=@createWalkerConstellation_Delta;
     F.getSatelliteNames = @getSatelliteNames;
+        F.renameSatelliteInSTK = @renameSatelliteInSTK;
+                F.batchRenameSatellitesInSTK = @batchRenameSatellitesInSTK;
+                F.convertSatelliteName = @convertSatelliteName;
+        
+ 
+   
 end
 
 function createSatellite(root, scenario, params)
@@ -140,7 +146,9 @@ function createWalkerConstellation_Delta(root, params)
         ' Type Delta ' ...
         ' NumPlanes ' num2str(num_planes) ...
         ' NumSatsPerPlane ' num2str(num_sats_per_plane) ...
-        ' InterPlanePhaseIncrement ' num2str(inter_plane_phase_increment)];
+        ' InterPlanePhaseIncrement ' num2str(inter_plane_phase_increment) ...
+         ' SetUniqueNames   Yes ' 
+        ];
     
     % 打印命令以供调试
     disp('执行的命令：');
@@ -154,7 +162,17 @@ function createWalkerConstellation_Delta(root, params)
         disp('执行 Walker 命令时发生错误：');
         disp(ME.message);
     end
+    
+    
+ 
+    
+    
+    
+    
 end
+
+
+ 
 
 function satellite_names = getSatelliteNames(scenario)
     % 获取给定场景中的所有卫星名称
@@ -194,3 +212,95 @@ function satellite_names = getSatelliteNames(scenario)
     disp(satellite_names);
 end
 
+function renameSatelliteInSTK(root, oldName, newName)
+    % 修改 STK 中卫星的名称
+    %
+    % 参数：
+    %   root: STK 的根对象
+    %   oldName: 当前的卫星名称
+    %   newName: 新的卫星名称
+
+    % 移除多余的空格，确保名称合法
+    oldName = strtrim(oldName);
+    newName = strtrim(newName);
+
+    % 确保名称不包含特殊字符
+    if contains(oldName, ' ') || contains(newName, ' ')
+        error('Satellite names cannot contain spaces.');
+    end
+
+    try
+        % 构建 STK 重命名命令
+        cmd = sprintf('Rename */Satellite/%s %s', oldName, newName);
+        fprintf('Executing command: %s\n', cmd); % 打印调试信息
+        root.ExecuteCommand(cmd);
+        fprintf('Renamed satellite "%s" to "%s" successfully.\n', oldName, newName);
+    catch ME
+        fprintf('Failed to rename satellite "%s" to "%s": %s\n', oldName, newName, ME.message);
+        disp('Possible issues:');
+        disp('- Ensure the satellite exists in STK.');
+        disp('- Confirm the new name is valid and unique.');
+        disp('- Verify the command syntax.');
+    end
+end
+
+function batchRenameSatellitesInSTK(root, oldNames)
+    % 批量修改 STK 中的卫星名称
+    %
+    % 参数：
+    %   root: STK 的根对象
+    %   oldNames: 原始卫星名称列表 (cell 数组)
+
+    for i = 1:length(oldNames)
+        % 获取当前的旧名称
+        oldName = oldNames{i};
+        
+        % 转换为新名称
+        newName = convertSatelliteName(oldName);
+        
+        % 修改 STK 中的名称
+        try
+            renameSatelliteInSTK(root, oldName, newName);
+        catch ME
+            fprintf('Failed to rename satellite %s to %s: %s\n', oldName, newName, ME.message);
+        end
+    end
+end
+
+function newName = convertSatelliteName(oldName)
+    % 转换卫星名称从 QF_1101 或 QF_11101 到 QF_i_j 格式
+    if ~startsWith(oldName, 'QF_')
+        error('Invalid satellite name format. Name must start with "QF_".');
+    end
+
+    % 提取数字部分
+    numPart = oldName(4:end); % 去掉 'QF_'
+    if ~all(isstrprop(numPart, 'digit'))
+        error('Invalid satellite name format. The part after "QF_" must be numeric.');
+    end
+
+    % 解析轨道编号 (i) 和卫星编号 (j)
+    % 解析轨道编号 (i) 和卫星编号 (j)
+if length(numPart) <= 3
+    i = 0; % 当数字不足三位时，轨道编号默认为 0
+    j = str2double(numPart);
+else
+    i = str2double(numPart(1:end-3));    % 前几位作为轨道编号
+    j = str2double(numPart(end-2:end)) - 100; % 最后三位作为卫星编号
+end
+
+% 构建新名称，确保 i 和 j 始终是两位数
+newName = sprintf('QF_%02d_%02d', i, j);
+
+%     if length(numPart) <= 3
+%         i = 0;
+%         j = str2double(numPart);
+%     else
+%         i = str2double(numPart(1:end-3)); % 前几位作为轨道编号
+%         j = str2double(numPart(end-2:end))-100; % 最后三位作为卫星编号
+%     end
+% 
+%     % 构建新名称
+%     newName = sprintf('QF_%d_%d', i, j);
+end
+ 

@@ -33,27 +33,46 @@ else
         disp(ME.message);
     end
 end
+ 
 
 
 
 %设置种子卫星
-seedsatename = 'horizontal'
+seedsatename2 = 'qianfan'
 %we set the seed satellite
 %这里采用结构化去赋值，方便管理
 params = struct();
-params.satelliteName = seedsatename;
-params.perigeeAlt = 1000;  % km
-params.apogeeAlt = 1000;
-params.inclination =53;
+params.satelliteName = seedsatename2;
+params.perigeeAlt = 1066;  % km
+params.apogeeAlt = 1066;
+params.inclination =89;
 params.argOfPerigee = 0;
-params.RAAN = 0;
-params.Anomaly = 0;
+params.RAAN = 10.2;
+params.Anomaly = 4.5;
 %we set the first seed1 satellite
 sat = sat();
 sat.createSatellite(root, scenario, params);
 
+
+% 定义 Walker 星座参数
+params_constellation = struct();
+params_constellation.seedSatelliteName =seedsatename2;          % 种子卫星名称
+params_constellation.numPlanes = 1;                             % 轨道平面数量
+params_constellation.numSatsPerPlane =30;                       % 每个平面的卫星数量
+params_constellation.interPlanePhaseIncrement = 0;
+
+% 调用函数来创建 Walker 星座
+sat.createWalkerConstellation_Delta(root, params_constellation);
+%we finish the waler ,so we need delet  the seed satellite
+root.ExecuteCommand(['Unload / */Satellite/' seedsatename2]);
+
+
+
+
+
+
 %设置种子卫星
-seedsatename = 'horizontal2'
+seedsatename = 'qf'
 %we set the seed satellite
 %这里采用结构化去赋值，方便管理
 params = struct();
