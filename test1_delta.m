@@ -109,15 +109,11 @@ ExportRe.MultilRePort_Para(root,'Satellite', satellite_names,reportParams);
 % 初始化 STK
 
  
-
 if USE_ENGINE
 
-    %------% 关闭engine
-    % 1. 释放根对象（AgStkObjectRoot）
-    delete(root);
-    clear root;
-    % 3. 释放 STKXApplication 对象
-    delete(STKXApplication);
-    clear STKXApplication;
-
+try
+    delete(app); % 释放 COM 对象
+    disp('STK 应用已关闭。');
+catch ME
+    disp('无法关闭 STK 应用。');
 end
