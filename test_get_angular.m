@@ -63,7 +63,7 @@ for i = 1:P
     %=============== 
     % 2. 创建种子卫星
     %=============== 
-    satObj = satsetup();  % 您自定义的 sat 类
+    satObj = sat();  % 您自定义的 sat 类
     satObj.createSatellite(root, scenario, params);
 
     %=============== 

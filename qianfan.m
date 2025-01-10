@@ -1,6 +1,6 @@
 
 % 设置是否使用 STK Engine
-USE_ENGINE = true;
+USE_ENGINE = false;
 
 % 初始化 STK
 if USE_ENGINE
@@ -40,7 +40,7 @@ end
 
 % 外层循环，假设想重复两次（例如创建两组不同的星座）
 
-P =3
+P =18
 N = 36
 for i = 1:P
     
@@ -87,6 +87,7 @@ for i = 1:P
 
 end
 
+ 
 
  sat = sat();
 
@@ -107,7 +108,11 @@ sat.batchRenameSatellitesInSTK(root,satellite_names)
 
 filepath = 'C:\usrspace\stkfile\sats\';
 
-% 假设 P 和 N 已定义
+
+ 
+
+ 
+% % 假设 P 和 N 已定义
 for i = 1:P-1
     for j = 1:N
         % 处理 i 的格式（两位数字）
@@ -143,7 +148,7 @@ for i = 1:P-1
         sat2 = ['QF_', startx2, '_',starty2];
         
         % 生成文件名
-        filename = sprintf('%02d_%02d_sa_output.txt', i, j);
+        filename = sprintf('%02d_%02d.txt', i, j);
         path = fullfile(filepath, filename);
         
         % 调用 Azimuth_Angle 函数
