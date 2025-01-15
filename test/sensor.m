@@ -1,10 +1,9 @@
 
  
 
-% addpath('C:/usrspace/matlabfile/stk/stkpythoon/module');
-% 设置是否使用 STK Engine
+ % 设置是否使用 STK Engine
 USE_ENGINE = false;
-% addpath('../module');
+ 
 % 初始化 STK
 if USE_ENGINE
     % 初始化 STK Engine
@@ -102,7 +101,7 @@ sensor = satellite.Children.New('eSensor',name); % 创建传感器
 %设置角度为
 sensor.CommonTasks.SetPatternSimpleConic(45, 0.1)
  
-
+% 3. 为地面站添加传感器
 facilityName = 'Facility1';
 facility = root.GetObjectFromPath(['Facility/' facilityName]);
 sensor = facility.Children.New('eSensor',facilityName); % 创建传感器
@@ -162,12 +161,9 @@ filepath = 'C:\usrspace\stkfile\los\access_time.txt';
 writetable(access_time_table, filepath, 'Delimiter', '\t');
 
 disp(['数据已保存到文件：', filepath]);
-
-
-Los = module.SensorModule();
- Los.LosCalculate(root, satelliteName, facilityName,scenario.StartTime,scenario.StopTime, filepath)
-
  
+ 
+
 
 
  

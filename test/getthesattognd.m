@@ -1,7 +1,9 @@
 
-% 设置是否使用 STK Engine
+ 
+
+ % 设置是否使用 STK Engine
 USE_ENGINE = false;
-addpath('../module');
+ 
 % 初始化 STK
 if USE_ENGINE
     % 初始化 STK Engine
@@ -20,19 +22,8 @@ scenario.SetTimePeriod(StartTime,StopTime);
 scenario.StartTime = StartTime;
 scenario.StopTime = StopTime;
 
-if USE_ENGINE
-    % 在 USE_ENGINE 为 true 的情况下执行的逻辑
-    % 添加你的逻辑代码
-else
-    % 当 USE_ENGINE 为 false 时，执行复位动画命令
-    try
-        root.ExecuteCommand('Animate * Reset');
-        disp('动画已复位成功');
-    catch ME
-        disp('动画复位失败:');
-        disp(ME.message);
-    end
-end
+ 
+
 
 % 假设您已经有 root 和 scenario 对象
 % root = ...; 
@@ -97,28 +88,34 @@ satellite_names =sat.getSatelliteNames(scenario);
 sat.batchRenameSatellitesInSTK(root,satellite_names)
 
 
+%we set the station
+facilityName = 'Facility1'
  
+Gnd = module.station();
 
-%first we get all the satellite name
- satellite_names =sat.getSatelliteNames(scenario);
- 
- %then we need pair the satellite, for example  QF_01_01 pair with QF_02_01
- %all the name is start with QF_x_y, x means the track,and y mean the id 
- 
+Gnd.SetStation(root, scenario,facilityName )
 
+ 
+% we se the sensror for the station
+Los = module.SensorModule();
+Los.CreateGndSensor(root,facilityName,70);
+
+
+ 
 % 设置文件路径
 
-filepath = 'C:\usrspace\stkfile\sats\';
-
+filepath = 'C:\usrspace\stkfile\los';
 
  
-
+ 
  
 % % 假设 P 和 N 已定义
-for i = 1:P-1
+
+
+for i = 1:P
     for j = 1:N
-        % 处理 i 的格式（两位数字）
-        if i < 10
+ 
+         if i < 10
             startx = ['0', num2str(i)];
         else
             startx = num2str(i);
@@ -133,77 +130,12 @@ for i = 1:P-1
         
         % 生成卫星1名称
         sat1 = ['QF_', startx, '_',starty];
-        
-        % 处理 i+1 的格式（两位数字）
-        if i+1 < 10
-            startx2 = ['0', num2str(i+1)];
-        else
-            startx2 = num2str(i+1);
-        end
-        
-        % 生成卫星2名称
-        if j < 10
-            starty2 = ['0', num2str(j)];
-        else
-            starty2 = num2str(j);
-        end
-        sat2 = ['QF_', startx2, '_',starty2];
-        
-        % 生成文件名
-        filename = sprintf('%02d_%02d.txt', i, j);
-        path = fullfile(filepath, filename);
-        
-        % 调用 Azimuth_Angle 函数
-        % 输出进度
-        disp(['处理完成: ', filename]);
-
-        Azmuth  = Get_Azimuth();
-
-        Azmuth.Azimuth_Angle(root, sat1, sat2,scenario.StartTime,scenario.StopTime,1,path)
- 
+% 为sat1建立angle
+    Los.CreateSatSensor(root,sat1,45)
+    Los.LosCalculate(root, sat1, facilityName,scenario.StartTime,scenario.StopTime, filepath)
     end
 end
 
 
-
-
-
-
-
- 
-
-
-% reportParams = struct();
-% %reportParams.satelliteName = 'Satellite1';
-% reportParams.reportStyle = 'fixed';  % 使用有效的报告样式
-% reportParams.filePath = 'C:/usrspace/stkfile/matlabfile';
-%  
-% reportParams.startTime = '24 Feb 2012 16:00:00.000';
-% reportParams.stopTime = '25 Feb 2012 16:00:00.000';
-% reportParams.timeStep = 1;
-% 
-% % get the satellite name so we could print the waypoint
-% 
-% 
-% ExportRe = ExportRe();
-% % 调用函数生成报告
-% %ExportRe.RePort(root, name,'Satellite',reportParams);
-% 
-% 
-% %ExportRe.MultilRePort(root,'Satellite', satellite_names,reportParams);
-% %我们采用并行，注意，目前只在matlb端并行了，实际上是stk自己也可以并行，以后再折腾
-% ExportRe.MultilRePort_Para(root,'Satellite', satellite_names,reportParams);
-
-
-if USE_ENGINE
-
-try
-    delete(app); % 释放 COM 对象
-    disp('STK 应用已关闭。');
-catch ME
-    disp('无法关闭 STK 应用。');
-end
-
-end
 
  

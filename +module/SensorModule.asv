@@ -66,8 +66,9 @@ try
             % 保存表格到文件
             disp('Before displaying fullFilePath...');
 
-        %    fullFilePath = filepath + satelliteName + "to" + facilityName + ".txt"
-fullFilePath = strcat(filepath, '\',satelliteName, 'to', facilityName, '.txt')    ;        
+            fullFilePath = filepath + satelliteName + "to" + facilityName + ".txt"
+            fullFilePath = strcat(filepath, satelliteName, 'to', facilityName, '.txt');
+            
             disp(fullFilePath);
 
              disp(fullFilePath)
