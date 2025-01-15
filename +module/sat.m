@@ -5,10 +5,10 @@ function F = sat
     F.createWalkerConstellation=@createWalkerConstellation;
     F.createWalkerConstellation_Delta=@createWalkerConstellation_Delta;
     F.getSatelliteNames = @getSatelliteNames;
-        F.renameSatelliteInSTK = @renameSatelliteInSTK;
-                F.batchRenameSatellitesInSTK = @batchRenameSatellitesInSTK;
-                F.convertSatelliteName = @convertSatelliteName;
-        
+F.renameSatelliteInSTK = @renameSatelliteInSTK;
+F.batchRenameSatellitesInSTK = @batchRenameSatellitesInSTK;
+ F.convertSatelliteName = @convertSatelliteName;
+ 
  
    
 end

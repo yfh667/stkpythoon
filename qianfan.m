@@ -1,7 +1,7 @@
 
 % 设置是否使用 STK Engine
 USE_ENGINE = false;
-
+addpath('../module');
 % 初始化 STK
 if USE_ENGINE
     % 初始化 STK Engine
@@ -40,8 +40,10 @@ end
 
 % 外层循环，假设想重复两次（例如创建两组不同的星座）
 
-P =18
-N = 36
+% P =18
+% N = 36
+P =10
+N = 10
 for i = 1:P
     
     %=============== 

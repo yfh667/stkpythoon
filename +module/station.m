@@ -1,6 +1,7 @@
-function F = station
-    F.station_names = @station_names;
-   
+function F = Station
+   F.Station = @Station;
+   F.getStation_names = @getStation_names;
+   F.SetStation = @SetStation
 end
 
 function station_names = getStation_names(scenario)
@@ -16,7 +17,7 @@ function station_names = getStation_names(scenario)
      stations = scenario.Children.GetElements('eFacility');
 
     % 获取卫星数量
-    numStation = station.Count;
+    numStation = stations.Count;
 
     % 初始化卫星名称列表
     station_names = {};
@@ -37,6 +38,18 @@ function station_names = getStation_names(scenario)
     end
 
     % 显示卫星名称
-    disp('名称列表：');
+    disp('地面站名称列表：');
     disp(station_names);
 end
+
+function SetStation(root,scenario,name)
+
+%设置地面设施
+facility =  scenario.Children.New('eFacility',name);
+
+facility.Position.AssignGeodetic(0.75,101,0);
+
+end
+ 
+
+
