@@ -127,28 +127,28 @@ AngleRate = cell2mat(angleAZData_AngleRate);
 % 创建表（table），保持时间为字符串格式
 data_table = table(angleAZData_Time, AngleRate, 'VariableNames', {'Time', 'AngleRate'});
 
-  
-
-% 将表写入到一个文本文件
-writetable(data_table, 'C:\usrspace\stkfile\sats\output.txt', 'Delimiter', '\t');
-
-% 显示提示信息
-disp('数据已成功导出到 output.txt 文件中。');
+%   
+% 
+% % 将表写入到一个文本文件
+% writetable(data_table, 'C:\usrspace\stkfile\sats\output.txt', 'Delimiter', '\t');
+% 
+% % 显示提示信息
+% disp('数据已成功导出到 output.txt 文件中。');
 
 
 %here we need delete the vector
 % 假设 QF0101 是目标卫星对象
-QF0101 = root.GetObjectFromPath('Satellite/QF_01_01');
+% QF0101 = root.GetObjectFromPath('Satellite/QF_01_01');
 
 % 检查是否存在目标矢量
-vectorName = 'AB_vector';
-if QF0101.vgt.Vectors.Contains(vectorName)
-    % 删除矢量
-    QF0101.vgt.Vectors.Remove(vectorName);
-    disp(['矢量 "', vectorName, '" 已成功删除。']);
-else
-    disp(['矢量 "', vectorName, '" 不存在，无法删除。']);
-end
+% vectorName = 'AB_vector';
+% if QF0101.vgt.Vectors.Contains(vectorName)
+%     % 删除矢量
+%     QF0101.vgt.Vectors.Remove(vectorName);
+%     disp(['矢量 "', vectorName, '" 已成功删除。']);
+% else
+%     disp(['矢量 "', vectorName, '" 不存在，无法删除。']);
+% end
 
  
   
