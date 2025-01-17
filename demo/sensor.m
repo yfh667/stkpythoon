@@ -82,7 +82,7 @@ end
 
  
 
- sat = module.sat();
+sat = module.sat();
 
 satellite_names =sat.getSatelliteNames(scenario);
 sat.batchRenameSatellitesInSTK(root,satellite_names)

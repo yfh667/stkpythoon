@@ -63,7 +63,7 @@ for i = 1:P
     %=============== 
     % 2. 创建种子卫星
     %=============== 
-    satObj = sat();  % 您自定义的 sat 类
+    satObj = module.sat();  % 您自定义的 sat 类
     satObj.createSatellite(root, scenario, params);
 
     %=============== 
@@ -88,14 +88,14 @@ for i = 1:P
 end
 
 
-sat = sat();
+sat = module.sat();
 
 satellite_names =sat.getSatelliteNames(scenario);
 sat.batchRenameSatellitesInSTK(root,satellite_names)
 
 
  
-
+    
 
 
 QF0101 = root.GetObjectFromPath('Satellite/QF_01_01');
@@ -151,90 +151,6 @@ else
 end
 
  
-%建立投影
-
-Azmuth  = Get_Azimuth();
-
-pwd = 'C:\usrspace\stkfile\sats\output.txt'
-Azmuth.Azimuth_Angle(root, 'QF_01_01', 'QF_02_01',scenario.StartTime,scenario.StopTime,60,pwd)
-
-
-
-
-
-
- %建立BA向量
-cmd = 'VectorTool * Satellite/QF_01_01 Create Vector Displacement_QF "Displacement" "Satellite/QF_01_01 Center" "Satellite/QF_02_01 Center"';
-root.ExecuteCommand(cmd);
-
-
-cmd = 'VectorTool * Satellite/QF_01_01 Create Vector Displacement_QF_Project "Projection" "Satellite/QF_01_01 Displacement_QF"   "  Satellite/QF_01_01 Body.XY"';
-root.ExecuteCommand(cmd);
-
-
-%建立方位角
-cmd = 'VectorTool * Satellite/QF_01_01 Create Angle  AZ_QF  "Between Vectors"	  "Satellite/QF_01_01 Body.X"  "Satellite/QF_01_01 Displacement_QF_Project"';
-root.ExecuteCommand(cmd);
-
-
-
-qf1 = root.GetObjectFromPath('Satellite/QF_01_01');
-dp = qf1.DataProviders.Item('Angles');
-
-satelliteDP3 = dp.Group.Item('AZ_QF')
-
-
-% 假设 "AZ_QF" 是 TimeVar
-dpTimeVar = satelliteDP3;  
-
-startTime = '24 Feb 2012 18:00:00.000';
-stopTime  = '25 Feb 2012 18:00:00.000';
-timeStep  = 60;  % 60秒
-
-% 想要的列，比如：Time、Angle、AngleRate
-elements = {'Time','AngleRate'};
-
-% 执行查询
-drResult = dpTimeVar.ExecElements(startTime, stopTime, timeStep, elements);
-da = drResult.DataSets
-
-
-%test
-%satellite= children.Item('QF_01_01');
-
-satellite= root.GetObjectFromPath('Satellite/QF_01_01');
-dpPos2 = satellite.DataProviders.GetDataPrvTimeVarFromPath("Cartesian Position//J2000");
-
-
+  
  
-elems  ={'Time', 'x','y', 'z' };
- 
-resPos= dpPos2.ExecElements(StartTime, StopTime, 60, elems);
-dsPos = resPos.DataSets;
-
-
-
-
-reportParams = struct();
-%reportParams.satelliteName = 'Satellite1';
-reportParams.reportStyle = 'fixed';  % 使用有效的报告样式
-reportParams.filePath = 'C:/usrspace/stkfile/matlabfile';
- 
- 
-reportParams.startTime = StartTime;
-reportParams.stopTime =StopTime;
-reportParams.timeStep = 1;
-
-% get the satellite name so we could print the waypoint
-
-
-ExportRe = ExportRe();
-% 调用函数生成报告
-%ExportRe.RePort(root, name,'Satellite',reportParams);
-
-
-%ExportRe.MultilRePort(root,'Satellite', satellite_names,reportParams);
-%我们采用并行，注意，目前只在matlb端并行了，实际上是stk自己也可以并行，以后再折腾
-ExportRe.MultilRePort_Para(root,'Satellite', satellite_names,reportParams);
-
 
