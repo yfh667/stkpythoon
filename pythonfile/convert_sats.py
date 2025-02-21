@@ -7,14 +7,22 @@ def convert_file(input_file, output_file):
         current_locale = locale.getlocale()
         locale.setlocale(locale.LC_TIME, 'en_US.UTF-8')
         # 跳过前7行，从第8行开始处理
-        data_lines = lines[7:]
+        data_lines = lines[1:]
 
         # 处理第一行以获取初始时间（这里的第一行是数据行的第一行）
         first_line_parts = data_lines[0].split()
         start_datetime_str = ' '.join(first_line_parts[:4])
+        # 分割整数秒和小数部分
+        if '.' in start_datetime_str:
+            date_part, microsecond_part = start_datetime_str.split('.')
+            microsecond_part = microsecond_part[:6]  # 截取前6位
+            adjusted_str = f"{date_part}.{microsecond_part}"
+        else:
+            adjusted_str = start_datetime_str
 
+        # 解析调整后的字符串
+        start_time = datetime.strptime(adjusted_str, "%d %b %Y %H:%M:%S.%f")
 
-        start_time = datetime.strptime(start_datetime_str, "%d %b %Y %H:%M:%S.%f")
 
         # 遍历每一行数据
         for line in data_lines:
@@ -24,7 +32,18 @@ def convert_file(input_file, output_file):
 
             # 合并日期和时间字符串，并转换为 datetime 对象
             current_datetime_str = ' '.join(parts[:4])
-            current_time = datetime.strptime(current_datetime_str, "%d %b %Y %H:%M:%S.%f")
+
+            if '.' in current_datetime_str:
+                date_part, microsecond_part = current_datetime_str.split('.')
+                microsecond_part = microsecond_part[:6]  # 截取前6位
+                adjusted_str = f"{date_part}.{microsecond_part}"
+            else:
+                adjusted_str = current_datetime_str
+
+            current_time =  datetime.strptime(adjusted_str, "%d %b %Y %H:%M:%S.%f")
+
+
+
             time_diff = current_time - start_time
             seconds_since_start = time_diff.total_seconds()
 
@@ -36,7 +55,7 @@ def convert_file(input_file, output_file):
             fout.write(f"{int(seconds_since_start)} {coords_str}\n")
 
 folder_path = "E:\\STK_file\\sats"
-folder_path_out = "E:\\STK_file\\sats\\modify2"
+folder_path_out = "E:\\STK_file\\sats\\modify"
 
 # 调用函数，输入和输出文件路径按需要修改
 #convert_file("chidao_fixed.txt", "chidao_fixed_modify.txt")
