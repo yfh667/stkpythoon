@@ -138,15 +138,25 @@ AB_vector_D_data_z =  AB_vector_D_data.DataSets.GetDataSetByName('z').GetValues;
  x = cell2mat(AB_vector_D_data_x); % 将 {[627.3107]} 转换为 [627.3107; ...]
 y = cell2mat(AB_vector_D_data_y);
 z = cell2mat(AB_vector_D_data_z);
-AB_vector_D_data_vector = [x, y, z]; % 得到 N×3 的矩阵，每行代表一个向量 [x, y, z]
 
-length = length(AB_vector_D_data_vector)
-w = zeros(length,3)
-for i =1:length
+ 
 
-w(i,:) =cross( AB_vector_data_vector(i,:),AB_vector_D_data_vector(i,:))/(w(i,1)^2+)
+% 计算叉乘
+cross_product = cross(AB_vector_data_vector, AB_vector_D_data_vector, 2);
 
-end
-  %the we get the 
- cross_product = cross(AB_vector_data_vector, AB_vector_D_data_vector, 2);
+% 计算模长平方
+r_norm_sq = sum(AB_vector_data_vector.^2, 2);
 
+% 处理极小值
+epsilon = 1e-10;
+r_norm_sq = max(r_norm_sq, epsilon);
+
+% 计算角速度
+omega = cross_product ./ r_norm_sq;
+
+
+ 
+%so we get the omage,and we need get the azmiuth and the elevation
+
+
+%azmiuth:exactly the projection in the XOY.it is the  omega(z)

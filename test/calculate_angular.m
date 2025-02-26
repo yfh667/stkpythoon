@@ -153,7 +153,46 @@ r_norm_sq = max(r_norm_sq, epsilon);
 
 % 计算角速度
 omega = cross_product ./ r_norm_sq;
+% 定义弧度到角度的转换因子
+rad2deg = 180 / pi;
 
+% 将整个矩阵转换为度/秒
+omega_deg_per_sec = omega * rad2deg;
 
  
 
+
+ 
+%so we get the omage,and we need get the azmiuth and the elevation
+
+
+%azmiuth:exactly the projection in the XOY.it is the  omega(z)
+
+
+
+%elevation:exactly  it is the  omega(y)
+
+
+% 提取数据
+omega_z = omega_deg_per_sec(:, 3);
+N = size(omega_deg_per_sec, 1);
+t = 0:N-1;
+
+% 设置自适应图形窗口
+figure('Units', 'normalized', 'Position', [0.1, 0.1, 0.8, 0.8]);
+
+% 绘制曲线
+plot(t, omega_z, 'LineWidth', 2);
+xlabel('时间 (秒)', 'FontSize', 14, 'FontWeight', 'bold');
+ylabel('角速度 z 分量 (°/s)', 'FontSize', 14, 'FontWeight', 'bold');
+title('角速度 z 分量随时间变化', 'FontSize', 16, 'FontWeight', 'bold');
+grid on;
+
+% 坐标轴美化
+ax = gca;
+ax.FontSize = 12;
+ax.LineWidth = 1.5;
+xlim([min(t), max(t)]);
+ylim([min(omega_z)*1.1, max(omega_z)*1.1]);
+
+ 
