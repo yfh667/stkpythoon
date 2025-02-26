@@ -94,14 +94,66 @@ satellite_names =sat.getSatelliteNames(scenario);
 sat.batchRenameSatellitesInSTK(root,satellite_names)
 
 
-numberofsatellite = 
-position = module.Get_Position()
- satellite1_name = 'QF_01_01'
- timestep = 1
- pwd = 'C:\usrspace\stkfile\sats\output.txt'
  
- 
- 
-position.GetPositionxyz(root, satellite1_name,scenario.StartTime,scenario.StopTime,timestep,pwd)
+    
 
+
+QF0101 = root.GetObjectFromPath('Satellite/QF_01_01');
+QF0201 = root.GetObjectFromPath('Satellite/QF_02_01');
+centerQF0101 = QF0101.vgt.Points.Item('Center');
+centerQF0201 = QF0201.vgt.Points.Item('Center');
+
+timestep = 1
+%first we need create the AB_vector
+
+AB_vector = QF0101.vgt.Vectors.Factory.CreateDisplacementVector('AB_vector',centerQF0101,centerQF0201);
+
+% we need get the ab_vector data in the A body referrence system
+AB_vector_data = QF0101.DataProviders.Item('Vectors(Body)').Group.Item('AB_vector').Exec(scenario.StartTime,scenario.StopTime,timestep);
+AB_vector_data_Time  = AB_vector_data.DataSets.GetDataSetByName('Time').GetValues
+AB_vector_data_x =  AB_vector_data.DataSets.GetDataSetByName('x').GetValues
+AB_vector_data_y =  AB_vector_data.DataSets.GetDataSetByName('y').GetValues
+AB_vector_data_z =  AB_vector_data.DataSets.GetDataSetByName('z').GetValues
+x = cell2mat(AB_vector_data_x); % 将 {[627.3107]} 转换为 [627.3107; ...]
+y = cell2mat(AB_vector_data_y);
+z = cell2mat(AB_vector_data_z);
+AB_vector_data_vector = [x, y, z]; % 得到 N×3 的矩阵，每行代表一个向量 [x, y, z]
+
+
+QF0101Axes=  QF0101.vgt.Axes.Item('Body'); 
+% sencond we get  the deriative of the ab_vector
+ 
+ 
+  AB_vector_D = QF0101.vgt.Vectors.Factory.Create('AB_vector_D','','eCrdnVectorTypeDerivative');
+
+  AB_vector_D.Vector.SetVector(AB_vector);
+  AB_vector_D.ReferenceAxes.SetAxes(QF0101Axes);
+  
+  AB_vector_D_data = QF0101.DataProviders.Item('Vectors(Body)').Group.Item('AB_vector_D').Exec(scenario.StartTime,scenario.StopTime,timestep);
+AB_vector_D_data_Time  = AB_vector_D_data.DataSets.GetDataSetByName('Time').GetValues;
+AB_vector_D_data_x =  AB_vector_D_data.DataSets.GetDataSetByName('x').GetValues;
+AB_vector_D_data_y =  AB_vector_D_data.DataSets.GetDataSetByName('y').GetValues;
+AB_vector_D_data_z =  AB_vector_D_data.DataSets.GetDataSetByName('z').GetValues;
+  
+ x = cell2mat(AB_vector_D_data_x); % 将 {[627.3107]} 转换为 [627.3107; ...]
+y = cell2mat(AB_vector_D_data_y);
+z = cell2mat(AB_vector_D_data_z);
+
+ 
+
+% 计算叉乘
+cross_product = cross(AB_vector_data_vector, AB_vector_D_data_vector, 2);
+
+% 计算模长平方
+r_norm_sq = sum(AB_vector_data_vector.^2, 2);
+
+% 处理极小值
+epsilon = 1e-10;
+r_norm_sq = max(r_norm_sq, epsilon);
+
+% 计算角速度
+omega = cross_product ./ r_norm_sq;
+
+
+ 
 

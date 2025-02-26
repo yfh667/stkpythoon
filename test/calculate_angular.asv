@@ -1,6 +1,6 @@
 %下属为测试代码，很乱
 % 设置是否使用 STK Engine
-USE_ENGINE = 1;
+USE_ENGINE = false;
 
 % 初始化 STK
 if USE_ENGINE
@@ -40,8 +40,8 @@ end
 
 % 外层循环，假设想重复两次（例如创建两组不同的星座）
 
-N = 30
-P = 5
+
+P = 2
 for i = 1:P
     
     %=============== 
@@ -73,7 +73,7 @@ for i = 1:P
     params_constellation = struct();
     params_constellation.seedSatelliteName       = seedSatelliteName; 
     params_constellation.numPlanes               = 1;    % 轨道平面数量
-    params_constellation.numSatsPerPlane         = N;   % 每个平面的卫星数
+    params_constellation.numSatsPerPlane         = 30;   % 每个平面的卫星数
     params_constellation.interPlanePhaseIncrement= 0;    % 平面间相位增量(此处为0)
 
     satObj.createWalkerConstellation_Delta(root, params_constellation);
@@ -94,25 +94,59 @@ satellite_names =sat.getSatelliteNames(scenario);
 sat.batchRenameSatellitesInSTK(root,satellite_names)
 
 
-numberofsatellite = P*N
-position = module.Get_Position()
+ 
+    
+
+
+QF0101 = root.GetObjectFromPath('Satellite/QF_01_01');
+QF0201 = root.GetObjectFromPath('Satellite/QF_02_01');
+centerQF0101 = QF0101.vgt.Points.Item('Center');
+centerQF0201 = QF0201.vgt.Points.Item('Center');
+
 timestep = 1
-new_satellite_names =sat.getSatelliteNames(scenario);
- for i =1:numberofsatellite
+%first we need create the AB_vector
+
+AB_vector = QF0101.vgt.Vectors.Factory.CreateDisplacementVector('AB_vector',centerQF0101,centerQF0201);
+
+% we need get the ab_vector data in the A body referrence system
+AB_vector_data = QF0101.DataProviders.Item('Vectors(Body)').Group.Item('AB_vector').Exec(scenario.StartTime,scenario.StopTime,timestep);
+AB_vector_data_Time  = AB_vector_data.DataSets.GetDataSetByName('Time').GetValues
+AB_vector_data_x =  AB_vector_data.DataSets.GetDataSetByName('x').GetValues
+AB_vector_data_y =  AB_vector_data.DataSets.GetDataSetByName('y').GetValues
+AB_vector_data_z =  AB_vector_data.DataSets.GetDataSetByName('z').GetValues
+x = cell2mat(AB_vector_data_x); % 将 {[627.3107]} 转换为 [627.3107; ...]
+y = cell2mat(AB_vector_data_y);
+z = cell2mat(AB_vector_data_z);
+AB_vector_data_vector = [x, y, z]; % 得到 N×3 的矩阵，每行代表一个向量 [x, y, z]
+
+
+QF0101Axes=  QF0101.vgt.Axes.Item('Body'); 
+% sencond we get  the deriative of the ab_vector
  
-  satellite1_name =new_satellite_names(i)
-  satellite1_name =  satellite1_name{1,1}
+ 
+  AB_vector_D = QF0101.vgt.Vectors.Factory.Create('AB_vector_D','','eCrdnVectorTypeDerivative');
+
+  AB_vector_D.Vector.SetVector(AB_vector);
+  AB_vector_D.ReferenceAxes.SetAxes(QF0101Axes);
   
-  filename = num2str(i)
+  AB_vector_D_data = QF0101.DataProviders.Item('Vectors(Body)').Group.Item('AB_vector_D').Exec(scenario.StartTime,scenario.StopTime,timestep);
+AB_vector_D_data_Time  = AB_vector_D_data.DataSets.GetDataSetByName('Time').GetValues;
+AB_vector_D_data_x =  AB_vector_D_data.DataSets.GetDataSetByName('x').GetValues;
+AB_vector_D_data_y =  AB_vector_D_data.DataSets.GetDataSetByName('y').GetValues;
+AB_vector_D_data_z =  AB_vector_D_data.DataSets.GetDataSetByName('z').GetValues;
   
- % pwd = 'C:\usrspace\stkfile\sats\output.txt'
- pwd = ['C:\usrspace\stkfile\sats\',filename,'.txt']
- 
- 
-position.GetPositionxyz(root, satellite1_name,scenario.StartTime,scenario.StopTime,timestep,pwd)
+ x = cell2mat(AB_vector_D_data_x); % 将 {[627.3107]} 转换为 [627.3107; ...]
+y = cell2mat(AB_vector_D_data_y);
+z = cell2mat(AB_vector_D_data_z);
+AB_vector_D_data_vector = [x, y, z]; % 得到 N×3 的矩阵，每行代表一个向量 [x, y, z]
 
+length = length(AB_vector_D_data_vector)
+w = zeros(length,3)
+for i =1:length
 
- end
- 
+w(i,:) =cross( AB_vector_data_vector(i,:),AB_vector_D_data_vector(i,:))/(w(i,1)^2+)
 
+end
+  %the we get the 
+ cross_product = cross(AB_vector_data_vector, AB_vector_D_data_vector, 2);
 

@@ -102,6 +102,11 @@ QF0101 = root.GetObjectFromPath('Satellite/QF_01_01');
 QF0201 = root.GetObjectFromPath('Satellite/QF_02_01');
 centerQF0101 = QF0101.vgt.Points.Item('Center');
 centerQF0201 = QF0201.vgt.Points.Item('Center');
+
+
+%first 
+
+
 QF0101Body_xy =  QF0101.vgt.Plane.Item('Body.XY');
 QF0101_vector_bodyx =  QF0101.vgt.Vector.Item('Body.X');
 AB_vector = QF0101.vgt.Vectors.Factory.CreateDisplacementVector('AB_vector',centerQF0101,centerQF0201);
