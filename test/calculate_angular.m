@@ -138,6 +138,7 @@ AB_vector_D_data_z =  AB_vector_D_data.DataSets.GetDataSetByName('z').GetValues;
  x = cell2mat(AB_vector_D_data_x); % 将 {[627.3107]} 转换为 [627.3107; ...]
 y = cell2mat(AB_vector_D_data_y);
 z = cell2mat(AB_vector_D_data_z);
+AB_vector_D_data_vector = [x, y, z]; % 得到 N×3 的矩阵，每行代表一个向量 [x, y, z]
 
  
 
