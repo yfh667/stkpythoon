@@ -1,5 +1,6 @@
+%下属为测试代码，很乱
 % 设置是否使用 STK Engine
-USE_ENGINE = false;
+USE_ENGINE = 1;
 
 % 初始化 STK
 if USE_ENGINE
@@ -19,10 +20,6 @@ scenario.SetTimePeriod(StartTime,StopTime);
 scenario.StartTime = StartTime;
 scenario.StopTime = StopTime;
 
-%设置动画轴
-%root.ExecuteCommand('Animate * Reset');
-
-
 if USE_ENGINE
     % 在 USE_ENGINE 为 true 的情况下执行的逻辑
     % 添加你的逻辑代码
@@ -36,7 +33,21 @@ else
         disp(ME.message);
     end
 end
-P = 2
+
+% 假设您已经有 root 和 scenario 对象
+% root = ...; 
+% scenario = ...;
+
+% 外层循环，假设想重复两次（例如创建两组不同的星座）
+%RAAN = 10.2
+
+
+
+
+N = 10
+P = 10
+RAAN = 180/10
+Anomaly_base = 4.5
 for i = 1:P
     
     %=============== 
@@ -52,8 +63,8 @@ for i = 1:P
     params.apogeeAlt     = 1066;    % km
     params.inclination   = 89;      % 度
     params.argOfPerigee  = 0;       % 近地点幅角
-    params.RAAN          = i*10.2;       % 升交点赤经(可按需在循环中改)
-    params.Anomaly       = i*4.5;       % 真近点角(或平近点角)
+    params.RAAN          = i*RAAN;       % 升交点赤经(可按需在循环中改)
+    params.Anomaly       = i*Anomaly_base;       % 真近点角(或平近点角)
 
     %=============== 
     % 2. 创建种子卫星
@@ -68,7 +79,7 @@ for i = 1:P
     params_constellation = struct();
     params_constellation.seedSatelliteName       = seedSatelliteName; 
     params_constellation.numPlanes               = 1;    % 轨道平面数量
-    params_constellation.numSatsPerPlane         = 30;   % 每个平面的卫星数
+    params_constellation.numSatsPerPlane         = N;   % 每个平面的卫星数
     params_constellation.interPlanePhaseIncrement= 0;    % 平面间相位增量(此处为0)
 
     satObj.createWalkerConstellation_Delta(root, params_constellation);
@@ -85,37 +96,44 @@ end
 sat = module.sat();
 
 satellite_names =sat.getSatelliteNames(scenario);
+
 sat.batchRenameSatellitesInSTK(root,satellite_names)
 
 
-QF0101 = root.GetObjectFromPath('Satellite/QF_01_01');
-
+numberofsatellite = P*N
+position = module.Get_Position()
 timestep = 1
-position = QF0101.DataProviders.Item('Vectors(ICRF)').Group.Item('Position').Exec(scenario.StartTime,scenario.StopTime,timestep);
+new_satellite_names =sat.getSatelliteNames(scenario);
 
-
-position_x  = position.DataSets.GetDataSetByName('x').GetValues;
-
-position_y  = position.DataSets.GetDataSetByName('y').GetValues;
-position_z  = position.DataSets.GetDataSetByName('z').GetValues;
-
-
+max_raw = 3600
+ for i =1:numberofsatellite
  
-
-position_time  = position.DataSets.GetDataSetByName('Time').GetValues;
-
+  satellite1_name =new_satellite_names(i)
+  satellite1_name =  satellite1_name{1,1}
+  
+  filename = num2str(i)
+  
+ % pwd = 'C:\usrspace\stkfile\sats\output.txt'
+ pwd = ['C:\usrspace\stkfile\position\',filename,'.txt']
  
-
-data_table = table(position_time, position_x,position_y,position_z, 'VariableNames', {'Time', 'x','y','z'});
-
  
-% 将表写入到一个文本文件
-%writetable(data_table, pwd, 'Delimiter', '\t');
-writetable(data_table, 'C:\usrspace\stkfile\sats\position.txt', 'Delimiter', '\t');
-    
-position = module.Get_Position();
- satellite1_name = 'QF_01_01'
- timestep = 1
- pwd = 'C:\usrspace\stkfile\sats\position\testout.txt'
+position.GetPositionxyz(root, satellite1_name,scenario.StartTime,scenario.StopTime,timestep,pwd,max_raw)
+
+
+ end
  
-position.GetPositionxyz(root, satellite1_name,scenario.StartTime,scenario.StopTime,timestep,pwd)
+ 
+ % 初始化 STK
+if USE_ENGINE
+
+    %------% 关闭engine
+    % 1. 释放根对象（AgStkObjectRoot）
+    delete(root);
+    clear root;
+    % 3. 释放 STKXApplication 对象
+    delete(app);
+    clear STKXApplication;
+
+end
+
+

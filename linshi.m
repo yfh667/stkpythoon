@@ -1,6 +1,6 @@
-%下属为测试代码，很乱
+
 % 设置是否使用 STK Engine
-USE_ENGINE = false;
+USE_ENGINE = 0;
 
 % 初始化 STK
 if USE_ENGINE
@@ -40,8 +40,21 @@ end
 
 % 外层循环，假设想重复两次（例如创建两组不同的星座）
 
-N = 36
-P = 18
+% P =18
+% N = 36
+%RAAN = 10.2
+%Anomaly = 4.5
+
+
+% P =3
+% N = 36
+% RAAN = 10.2
+% Anomaly = 4.5
+
+N = 10
+P = 3
+RAAN = 180/10
+Anomaly_base = 4.5
 for i = 1:P
     
     %=============== 
@@ -57,8 +70,8 @@ for i = 1:P
     params.apogeeAlt     = 1066;    % km
     params.inclination   = 89;      % 度
     params.argOfPerigee  = 0;       % 近地点幅角
-    params.RAAN          = i*10.2;       % 升交点赤经(可按需在循环中改)
-    params.Anomaly       = i*4.5;       % 真近点角(或平近点角)
+    params.RAAN          = i*RAAN;       % 升交点赤经(可按需在循环中改)
+    params.Anomaly       = i*Anomaly_base;       % 真近点角(或平近点角)
 
     %=============== 
     % 2. 创建种子卫星
@@ -87,6 +100,7 @@ for i = 1:P
 
 end
 
+ 
 
 sat = module.sat();
 
@@ -95,67 +109,96 @@ sat.batchRenameSatellitesInSTK(root,satellite_names)
 
 
  
-    
 
 
-QF0101 = root.GetObjectFromPath('Satellite/QF_01_01');
-QF0201 = root.GetObjectFromPath('Satellite/QF_02_01');
-centerQF0101 = QF0101.vgt.Points.Item('Center');
-centerQF0201 = QF0201.vgt.Points.Item('Center');
-
-
-%first 
-
-
-QF0101Body_xy =  QF0101.vgt.Plane.Item('Body.XY');
-QF0101_vector_bodyx =  QF0101.vgt.Vector.Item('Body.X');
-AB_vector = QF0101.vgt.Vectors.Factory.CreateDisplacementVector('AB_vector',centerQF0101,centerQF0201);
-
-AB_vector_projection = QF0101.vgt.Vectors.Factory.Create('AB_vector_projection','','eCrdnVectorTypeProjection');
+%first we get all the satellite name
+ satellite_names =sat.getSatelliteNames(scenario);
  
-AB_vector_projection.Source.SetVector(AB_vector);
-AB_vector_projection.ReferencePlane.SetPlane(QF0101Body_xy) 
-
-Azimuth = QF0101.vgt.Angles.Factory.Create('Azimuth','','eCrdnAngleTypeBetweenVectors');
-Azimuth.FromVector.SetVector(QF0101_vector_bodyx);
-Azimuth.ToVector.SetVector(AB_vector_projection);
-
-angleAZ = QF0101.DataProviders.Item('Angles').Group.Item('Azimuth').Exec(scenario.StartTime,scenario.StopTime,60);
-
-angleAZData_AngleRate  = angleAZ.DataSets.GetDataSetByName('AngleRate').GetValues
-angleAZData_Time  = angleAZ.DataSets.GetDataSetByName('Time').GetValues
- 
- 
-% 展开角速率数据（如数据在单元格中）
-AngleRate = cell2mat(angleAZData_AngleRate);
-
-% 创建表（table），保持时间为字符串格式
-data_table = table(angleAZData_Time, AngleRate, 'VariableNames', {'Time', 'AngleRate'});
-
-%   
-% 
-% % 将表写入到一个文本文件
-% writetable(data_table, 'C:\usrspace\stkfile\sats\output.txt', 'Delimiter', '\t');
-% 
-% % 显示提示信息
-% disp('数据已成功导出到 output.txt 文件中。');
-
-
-%here we need delete the vector
-% 假设 QF0101 是目标卫星对象
-% QF0101 = root.GetObjectFromPath('Satellite/QF_01_01');
-
-% 检查是否存在目标矢量
-% vectorName = 'AB_vector';
-% if QF0101.vgt.Vectors.Contains(vectorName)
-%     % 删除矢量
-%     QF0101.vgt.Vectors.Remove(vectorName);
-%     disp(['矢量 "', vectorName, '" 已成功删除。']);
-% else
-%     disp(['矢量 "', vectorName, '" 不存在，无法删除。']);
-% end
-
- 
-  
+ %then we need pair the satellite, for example  QF_01_01 pair with QF_02_01
+ %all the name is start with QF_x_y, x means the track,and y mean the id 
  
 
+% 设置文件路径
+
+filepath = 'C:\usrspace\stkfile\sats\';
+
+
+ 
+Azmuth_arary = cell(N, P-1); % 预分配单元格数组
+
+ 
+% % 假设 P 和 N 已定义
+for i = 1:P-1
+    for j = 1:N
+        % 处理 i 的格式（两位数字）
+        if i < 10
+            startx = ['0', num2str(i)];
+        else
+            startx = num2str(i);
+        end
+        
+        % 处理 j 的格式（两位数字）
+        if j < 10
+            starty = ['0', num2str(j)];
+        else
+            starty = num2str(j);
+        end
+        
+        % 生成卫星1名称
+        sat1 = ['QF_', startx, '_',starty];
+        
+        % 处理 i+1 的格式（两位数字）
+        if i+1 < 10
+            startx2 = ['0', num2str(i+1)];
+        else
+            startx2 = num2str(i+1);
+        end
+        
+        % 生成卫星2名称
+        if j < 10
+            starty2 = ['0', num2str(j)];
+        else
+            starty2 = num2str(j);
+        end
+        sat2 = ['QF_', startx2, '_',starty2];
+        
+        % 生成文件名
+        filename = sprintf('%02d_%02d.txt', i, j);
+        path = fullfile(filepath, filename);
+
+        
+        % 调用 Azimuth_Angle 函数
+        % 输出进度
+        disp(['处理完成: ', filename]);
+
+        Azmuth  = module.Get_Azimuth();
+
+       Azmuth_A = Azmuth.Azimuth_Angle_vector(root, sat1, sat2,'24 Feb 2012 18:05:00.000','24 Feb 2012 18:05:00.000',1)
+        Azmuth_arary{j,i} = Azmuth_A;
+    end
+end
+
+
+
+ 
+
+ % 将cell数组中的表格数据提取为数值矩阵
+A = cellfun(@(x) x.AngleRate, Azmuth_arary);
+
+result = double(abs(A)>=0.12)
+
+
+ 
+
+if USE_ENGINE
+
+try
+    delete(app); % 释放 COM 对象
+    disp('STK 应用已关闭。');
+catch ME
+    disp('无法关闭 STK 应用。');
+end
+
+end
+
+ 

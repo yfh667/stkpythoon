@@ -1,6 +1,6 @@
 %下属为测试代码，很乱
 % 设置是否使用 STK Engine
-USE_ENGINE = 1;
+USE_ENGINE = 0;
 
 % 初始化 STK
 if USE_ENGINE
@@ -39,9 +39,13 @@ end
 % scenario = ...;
 
 % 外层循环，假设想重复两次（例如创建两组不同的星座）
+%RAAN = 10.2
 
-N = 30
-P = 5
+
+N = 10
+P = 3
+RAAN = 360/10
+
 for i = 1:P
     
     %=============== 
@@ -57,7 +61,7 @@ for i = 1:P
     params.apogeeAlt     = 1066;    % km
     params.inclination   = 89;      % 度
     params.argOfPerigee  = 0;       % 近地点幅角
-    params.RAAN          = i*10.2;       % 升交点赤经(可按需在循环中改)
+    params.RAAN          = i*RAAN;       % 升交点赤经(可按需在循环中改)
     params.Anomaly       = i*4.5;       % 真近点角(或平近点角)
 
     %=============== 
@@ -91,6 +95,7 @@ end
 sat = module.sat();
 
 satellite_names =sat.getSatelliteNames(scenario);
+
 sat.batchRenameSatellitesInSTK(root,satellite_names)
 
 
@@ -98,6 +103,8 @@ numberofsatellite = P*N
 position = module.Get_Position()
 timestep = 1
 new_satellite_names =sat.getSatelliteNames(scenario);
+
+max_raw = 3600
  for i =1:numberofsatellite
  
   satellite1_name =new_satellite_names(i)
@@ -106,13 +113,26 @@ new_satellite_names =sat.getSatelliteNames(scenario);
   filename = num2str(i)
   
  % pwd = 'C:\usrspace\stkfile\sats\output.txt'
- pwd = ['C:\usrspace\stkfile\sats\',filename,'.txt']
+ pwd = ['C:\usrspace\stkfile\position\',filename,'.txt']
  
  
-position.GetPositionxyz(root, satellite1_name,scenario.StartTime,scenario.StopTime,timestep,pwd)
+position.GetPositionxyz(root, satellite1_name,scenario.StartTime,scenario.StopTime,timestep,pwd,max_raw)
 
 
  end
  
+ 
+ % 初始化 STK
+if USE_ENGINE
+
+    %------% 关闭engine
+    % 1. 释放根对象（AgStkObjectRoot）
+    delete(root);
+    clear root;
+    % 3. 释放 STKXApplication 对象
+    delete(app);
+    clear STKXApplication;
+
+end
 
 
