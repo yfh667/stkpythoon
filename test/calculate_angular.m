@@ -175,7 +175,7 @@ omega_deg_per_sec = omega * rad2deg;
 
 
 % 提取数据
-omega_z = omega_deg_per_sec(:, 3);
+omega_z = omega_deg_per_sec(:, 1);
 N = size(omega_deg_per_sec, 1);
 t = 0:N-1;
 

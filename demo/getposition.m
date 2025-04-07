@@ -39,13 +39,15 @@ end
 % scenario = ...;
 
 % 外层循环，假设想重复两次（例如创建两组不同的星座）
+
+
 %RAAN = 10.2
 
 
 N = 10
-P = 3
-RAAN = 360/10
-
+P = 2
+RAAN = 180/10
+Anomaly_base = 4.5
 for i = 1:P
     
     %=============== 
@@ -61,8 +63,8 @@ for i = 1:P
     params.apogeeAlt     = 1066;    % km
     params.inclination   = 89;      % 度
     params.argOfPerigee  = 0;       % 近地点幅角
-    params.RAAN          = i*RAAN;       % 升交点赤经(可按需在循环中改)
-    params.Anomaly       = i*4.5;       % 真近点角(或平近点角)
+    params.RAAN          =  (i-1)*RAAN;       % 升交点赤经(可按需在循环中改)
+    params.Anomaly       = (i-1)*Anomaly_base;       % 真近点角(或平近点角)
 
     %=============== 
     % 2. 创建种子卫星
@@ -117,6 +119,7 @@ max_raw = 3600
  
  
 position.GetPositionxyz(root, satellite1_name,scenario.StartTime,scenario.StopTime,timestep,pwd,max_raw)
+%position.GetPositionxyz(root, satellite1_name,scenario.StartTime,scenario.StopTime,timestep,pwd)
 
 
  end

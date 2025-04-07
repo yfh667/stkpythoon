@@ -126,10 +126,10 @@ QF0101Axes=  QF0101.vgt.Axes.Item('Body');
  
   AB_vector_D = QF0101.vgt.Vectors.Factory.Create('AB_vector_D','','eCrdnVectorTypeDerivative');
 
-  AB_vector_D.Vector.SetVector(AB_vector);
-  AB_vector_D.ReferenceAxes.SetAxes(QF0101Axes);
+AB_vector_D.Vector.SetVector(AB_vector);
+AB_vector_D.ReferenceAxes.SetAxes(QF0101Axes);
   
-  AB_vector_D_data = QF0101.DataProviders.Item('Vectors(Body)').Group.Item('AB_vector_D').Exec(scenario.StartTime,scenario.StopTime,timestep);
+AB_vector_D_data = QF0101.DataProviders.Item('Vectors(Body)').Group.Item('AB_vector_D').Exec(scenario.StartTime,scenario.StopTime,timestep);
 AB_vector_D_data_Time  = AB_vector_D_data.DataSets.GetDataSetByName('Time').GetValues;
 AB_vector_D_data_x =  AB_vector_D_data.DataSets.GetDataSetByName('x').GetValues;
 AB_vector_D_data_y =  AB_vector_D_data.DataSets.GetDataSetByName('y').GetValues;
@@ -174,7 +174,7 @@ omega_deg_per_sec = omega * rad2deg;
 
 
 % 提取数据
-omega_z = omega_deg_per_sec(:, 3);
+omega_z = omega_deg_per_sec(:, 1);
 N = size(omega_deg_per_sec, 1);
 t = 0:N-1;
 

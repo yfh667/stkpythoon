@@ -42,12 +42,12 @@ function station_names = getStation_names(scenario)
     disp(station_names);
 end
 
-function SetStation(root,scenario,name)
+function SetStation(root,scenario,name,longitude,Latitude)
 
 %设置地面设施
 facility =  scenario.Children.New('eFacility',name);
 
-facility.Position.AssignGeodetic(0.75,101,0);
+facility.Position.AssignGeodetic(Latitude,longitude,0);
 
 end
  
