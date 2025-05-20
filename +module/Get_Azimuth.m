@@ -30,29 +30,19 @@ function  Azimuth_Angle(root, satellite1_name, satellite2_name,starttime,endtime
     satellite1_bodyY_vector = satellite1.vgt.Vector.Item('Body.Y');
     
     % 创建从卫星1到卫星2的位移矢量
-%     displacement_vector = satellite1.vgt.Vectors.Factory.CreateDisplacementVector(...
-%         'Displacement_Vector', center_satellite1, center_satellite2);
-%     
-        displacement_vector = satellite1.vgt.Vectors.Factory.CreateDisplacementVector(...
+
+   displacement_vector = satellite1.vgt.Vectors.Factory.CreateDisplacementVector(...
        displacement_vector_name, center_satellite1, center_satellite2);
-    
-    
-    
+   
     % 创建位移矢量在卫星1 Body XY平面上的投影
-%     displacement_vector_projection = satellite1.vgt.Vectors.Factory.Create(...
-%         'Displacement_Vector_Projection', '', 'eCrdnVectorTypeProjection');
-%     
        displacement_vector_projection = satellite1.vgt.Vectors.Factory.Create(...
         projection_vector_name, '', 'eCrdnVectorTypeProjection');
-    
     
     displacement_vector_projection.Source.SetVector(displacement_vector);
     displacement_vector_projection.ReferencePlane.SetPlane(satellite1_bodyXY_plane);
     
     % 计算方位角（Azimuth）
-   % azimuth_angle = satellite1.vgt.Angles.Factory.Create( 'Azimuth', '', 'eCrdnAngleTypeBetweenVectors'  );
-     
-        azimuth_angle = satellite1.vgt.Angles.Factory.Create(azimuth_angle_name, '', 'eCrdnAngleTypeBetweenVectors'  );
+ azimuth_angle = satellite1.vgt.Angles.Factory.Create(azimuth_angle_name, '', 'eCrdnAngleTypeBetweenVectors'  );
 
     azimuth_angle.FromVector.SetVector(satellite1_bodyY_vector);
     azimuth_angle.ToVector.SetVector(displacement_vector_projection);
@@ -60,8 +50,6 @@ function  Azimuth_Angle(root, satellite1_name, satellite2_name,starttime,endtime
     % 提示计算完成
     disp('方位角构建完成！');
     
-  
-     
     angleAZ = satellite1.DataProviders.Item('Angles').Group.Item(azimuth_angle_name).Exec(starttime,endtime,timestep);
 
     angleAZData_AngleRate  = angleAZ.DataSets.GetDataSetByName('AngleRate').GetValues;
