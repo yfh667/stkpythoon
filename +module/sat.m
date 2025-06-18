@@ -7,6 +7,7 @@ function F = sat
     F.getSatelliteNames = @getSatelliteNames;
 F.renameSatelliteInSTK = @renameSatelliteInSTK;
 F.batchRenameSatellitesInSTK = @batchRenameSatellitesInSTK;
+F.batchRenameSatellitesInSTK2 = @batchRenameSatellitesInSTK2;
  F.convertSatelliteName = @convertSatelliteName;
  
  
@@ -303,4 +304,30 @@ newName = sprintf('QF_%02d_%02d', i, j);
 %     % 构建新名称
 %     newName = sprintf('QF_%d_%d', i, j);
 end
+
+
+function batchRenameSatellitesInSTK2(root, oldNames)
+    % 批量修改 STK 中的卫星名称
+    %
+    % 参数：
+    %   root: STK 的根对象
+    %   oldNames: 原始卫星名称列表 (cell 数组)
+
+    for i = 1:length(oldNames)
+        % 获取当前的旧名称
+        oldName = oldNames{i};
+        
+        % 使用 qf_i 生成新名称
+        newName = sprintf('qf_%d', i);  % 假设 qf_i 的格式为 'qf_1', 'qf_2' 等
+        
+        % 修改 STK 中的名称
+        try
+            renameSatelliteInSTK(root, oldName, newName);
+        catch ME
+            fprintf('Failed to rename satellite %s to %s: %s\n', oldName, newName, ME.message);
+        end
+    end
+end
+
+
  

@@ -13,8 +13,8 @@ else
     root = app.Personality2; 
 end
 %设置senario的时间
-StartTime  =  '24 Feb 2012 18:00:00.000';
-StopTime =  '25 Feb 2012 18:00:00.000';
+StartTime  =  '6 Jan 2025 00:00:00.000';
+StopTime =  '7 Jan 2025 00:00:00.000';
 scenario = root.Children.New('eScenario','MATLAB_PredatorMission');
 scenario.SetTimePeriod(StartTime,StopTime);
 scenario.StartTime = StartTime;
@@ -40,10 +40,10 @@ end
 
 % 外层循环，假设想重复两次（例如创建两组不同的星座）
 
-% P =18
-% N = 36
-P =3
-N = 36
+ P =18
+ N = 36
+%P =3
+%N = 36
 for i = 1:P
     
     %=============== 
@@ -94,7 +94,9 @@ end
  sat = module.sat();
 
 satellite_names =sat.getSatelliteNames(scenario);
-sat.batchRenameSatellitesInSTK(root,satellite_names)
+sat.batchRenameSatellitesInSTK2(root,satellite_names)
+
+
 
 
  

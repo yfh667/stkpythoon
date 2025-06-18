@@ -16,7 +16,7 @@ function GetPositionxyz(root, satellite1_name, starttime, endtime, timestep, fil
     
     % 查询位置数据
    % position = satellite1.DataProviders.Item('Vectors(J2000)').Group.Item('Position').Exec(starttime, endtime, timestep);
-        position = satellite1.DataProviders.Item('Vectors(Fixed)').Group.Item('Position').Exec(starttime, endtime, timestep);
+        position = satellite1.DataProviders.Item('Vectors(J2000)').Group.Item('Position').Exec(starttime, endtime, timestep);
 
     % 提取数据列（确保为列向量）
     position_x = position.DataSets.GetDataSetByName('x').GetValues;

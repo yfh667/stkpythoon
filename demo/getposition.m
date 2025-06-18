@@ -106,7 +106,7 @@ position = module.Get_Position()
 timestep = 1
 new_satellite_names =sat.getSatelliteNames(scenario);
 
-max_raw = 3600
+ 
  for i =1:numberofsatellite
  
   satellite1_name =new_satellite_names(i)
@@ -118,7 +118,7 @@ max_raw = 3600
  pwd = ['C:\usrspace\stkfile\position\',filename,'.txt']
  
  
-position.GetPositionxyz(root, satellite1_name,scenario.StartTime,scenario.StopTime,timestep,pwd,max_raw)
+position.GetPositionxyz(root, satellite1_name,scenario.StartTime,scenario.StopTime,timestep,pwd)
 %position.GetPositionxyz(root, satellite1_name,scenario.StartTime,scenario.StopTime,timestep,pwd)
 
 
