@@ -126,10 +126,10 @@ QF0101Axes=  QF0101.vgt.Axes.Item('Body');
  
   AB_vector_D = QF0101.vgt.Vectors.Factory.Create('AB_vector_D','','eCrdnVectorTypeDerivative');
 
-AB_vector_D.Vector.SetVector(AB_vector);
-AB_vector_D.ReferenceAxes.SetAxes(QF0101Axes);
+  AB_vector_D.Vector.SetVector(AB_vector);
+  AB_vector_D.ReferenceAxes.SetAxes(QF0101Axes);
   
-AB_vector_D_data = QF0101.DataProviders.Item('Vectors(Body)').Group.Item('AB_vector_D').Exec(scenario.StartTime,scenario.StopTime,timestep);
+  AB_vector_D_data = QF0101.DataProviders.Item('Vectors(Body)').Group.Item('AB_vector_D').Exec(scenario.StartTime,scenario.StopTime,timestep);
 AB_vector_D_data_Time  = AB_vector_D_data.DataSets.GetDataSetByName('Time').GetValues;
 AB_vector_D_data_x =  AB_vector_D_data.DataSets.GetDataSetByName('x').GetValues;
 AB_vector_D_data_y =  AB_vector_D_data.DataSets.GetDataSetByName('y').GetValues;
@@ -138,6 +138,7 @@ AB_vector_D_data_z =  AB_vector_D_data.DataSets.GetDataSetByName('z').GetValues;
  x = cell2mat(AB_vector_D_data_x); % 将 {[627.3107]} 转换为 [627.3107; ...]
 y = cell2mat(AB_vector_D_data_y);
 z = cell2mat(AB_vector_D_data_z);
+AB_vector_D_data_vector = [x, y, z]; % 得到 N×3 的矩阵，每行代表一个向量 [x, y, z]
 
  
 
