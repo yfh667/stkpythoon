@@ -1,7 +1,7 @@
 
 
 % 设置是否使用 STK Engine
-USE_ENGINE = false;
+USE_ENGINE = true;
 
 % 初始化 STK
 if USE_ENGINE
@@ -40,11 +40,15 @@ end
 
 % P =18
 % N = 36
-P =1
+P =18
 N = 36
- RAAN = 10.2
+ RAAN = 10
+ height =561
  
  Anomaly_base = 4.5
+ 
+ baseRaan  = 55
+ 
 for i = 1:P
     
     %=============== 
@@ -56,11 +60,11 @@ for i = 1:P
     % 轨道与初始状态参数
     params = struct();
     params.satelliteName = seedSatelliteName;
-    params.perigeeAlt    = 1066;    % km
-    params.apogeeAlt     = 1066;    % km
+    params.perigeeAlt    = height;    % km
+    params.apogeeAlt     = height;    % km
     params.inclination   = 89;      % 度
     params.argOfPerigee  = 0;       % 近地点幅角
-    params.RAAN          =  (i-1)*RAAN;       % 升交点赤经(可按需在循环中改)
+    params.RAAN          =  baseRaan+(i-1)*RAAN;       % 升交点赤经(可按需在循环中改)
     params.Anomaly       = (i-1)*Anomaly_base;       % 真近点角(或平近点角)
 
     %=============== 
@@ -105,23 +109,48 @@ position = module.Get_Position()
 timestep = 1
 new_satellite_names =sat.getSatelliteNames(scenario);
 
+% --- 生成带 baseRaan 标记的输出文件夹 ---
+baseOutDir = 'C:\usrspace\stkfile\position';
+
  
- for i =1:numberofsatellite
+% 直接格式化为整数形式：例如 10 -> baseRaan_10
+baseRaanTag = sprintf('baseRaan_%d', baseRaan);
+
+outDir = fullfile(baseOutDir, baseRaanTag);
+
+% 若文件夹不存在则创建
+if ~exist(outDir, 'dir')
+    mkdir(outDir);
+end
+
  
-  satellite1_name =new_satellite_names(i)
-  satellite1_name =  satellite1_name{1,1}
-  
-  filename = num2str(i)
-  
- % pwd = 'C:\usrspace\stkfile\sats\output.txt'
- pwd = ['C:\usrspace\stkfile\position\',filename,'.txt']
- 
- 
-position.GetPositionxyz(root, satellite1_name,scenario.StartTime,scenario.StopTime,timestep,pwd)
-%position.GetPositionxyz(root, satellite1_name,scenario.StartTime,scenario.StopTime,timestep,pwd)
+% --- 下面循环里生成每颗卫星的文件名 ---
+for i = 1:numberofsatellite
+    satellite1_name = new_satellite_names{i};
+
+    filename = sprintf('%d.txt', i);
+    pwd = fullfile(outDir, filename);
+
+    position.GetPositionxyz(root, satellite1_name, scenario.StartTime, scenario.StopTime, timestep, pwd);
+end
 
 
- end
+%  for i =1:numberofsatellite
+%  
+%   satellite1_name =new_satellite_names(i)
+%   satellite1_name =  satellite1_name{1,1}
+%   
+%   filename = num2str(i)
+%   
+%  % pwd = 'C:\usrspace\stkfile\sats\output.txt'
+%  pwd = ['C:\usrspace\stkfile\position\',filename,'.txt']
+%  
+%  
+% position.GetPositionxyz(root, satellite1_name,scenario.StartTime,scenario.StopTime,timestep,pwd)
+% %position.GetPositionxyz(root, satellite1_name,scenario.StartTime,scenario.StopTime,timestep,pwd)
+% 
+% 
+%  end
  
  
 
