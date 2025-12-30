@@ -1,7 +1,7 @@
 
 
 % 设置是否使用 STK Engine
-USE_ENGINE = true;
+USE_ENGINE = false;
 
 % 初始化 STK
 if USE_ENGINE
@@ -50,62 +50,26 @@ N = 36
  
  baseRaan  = 135
  
-for i = 1:P
-    
-    %=============== 
-    % 1. 设置“种子卫星”参数
-    %=============== 
-    % 为了区分不同循环生成的卫星，给种子卫星起一个带下标的名字
-    seedSatelliteName = sprintf('QF_%d', i);
-	
-    % 轨道与初始状态参数
-    params = struct();
-    params.satelliteName = seedSatelliteName;
-    params.perigeeAlt    = height;    % km
-    params.apogeeAlt     = height;    % km
-    params.inclination   = 89;      % 度
-    params.argOfPerigee  = 0;       % 近地点幅角
-    params.RAAN          =  baseRaan+(i-1)*RAAN;       % 升交点赤经(可按需在循环中改)
-    params.Anomaly       = (i-1)*Anomaly_base;       % 真近点角(或平近点角)
-
-    %=============== 
-    % 2. 创建种子卫星
-    %=============== 
-    satObj = module.sat();  % 您自定义的 sat 类
-    satObj.createSatellite(root, scenario, params);
-
-    %=============== 
-    % 3. 定义并创建 Walker 星座
-    %=============== 
-    % 这里设置1个轨道面、每面30颗卫星，不分面间相位增量
-    params_constellation = struct();
-    params_constellation.seedSatelliteName       = seedSatelliteName; 
-    params_constellation.numPlanes               = 1;    % 轨道平面数量
-    params_constellation.numSatsPerPlane         = N;   % 每个平面的卫星数
-    params_constellation.interPlanePhaseIncrement= 0;    % 平面间相位增量(此处为0)
-
-    satObj.createWalkerConstellation_Delta(root, params_constellation);
-
-    %=============== 
-    % 4. 卸载种子卫星
-    %=============== 
-    % 由于 Walker 星座已创建完，可以删除原先的种子卫星
-    unloadCmd = sprintf('Unload / */Satellite/%s', seedSatelliteName);
-    root.ExecuteCommand(unloadCmd);
-
-end
+ 
+  
 
 
 
-
-sat = module.sat();
-
-satellite_names =sat.getSatelliteNames(scenario);
-
-sat.batchRenameSatellitesInSTK2(root,satellite_names)
+station = module.station();
+longitude = 10
+Latitude = 10
+station.SetStation(root, scenario,"BEIJIN",longitude,Latitude)
 
 
-numberofsatellite = length(satellite_names)
+
+station_names = station.getStation_names(scenario);
+
+
+ 
+
+
+
+numberofsatellite = length(station_names)
 position = module.Get_Position()
 timestep = 1
 new_satellite_names =sat.getSatelliteNames(scenario);
