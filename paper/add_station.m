@@ -35,30 +35,14 @@ else
     end
 end
 
-
-
-
-% P =18
-% N = 36
-P =18
-N = 36
- RAAN = 10
-  height =561
-%  
-%  height =1066
- Anomaly_base = 4.5
- 
- baseRaan  = 135
  
  
-  
+
 
 
 
 station = module.station();
-longitude = 10
-Latitude = 10
-station.SetStation(root, scenario,"BEIJIN",longitude,Latitude)
+ 
 
 
 
