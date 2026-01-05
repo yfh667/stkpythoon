@@ -36,6 +36,72 @@ else
 end
 
 
+folder = 'C:\usrspace\stkfile\position\stationfile';
+
+% 1. 获取所有地面站文件
+files = dir(fullfile(folder, '*.txt'));
+numFiles = length(files);
+
+% ================= 核心步骤：按数字 ID 对文件列表排序 =================
+% 提取每个文件的数字 ID
+file_IDs = zeros(numFiles, 1);
+for k = 1:numFiles
+    [~, nameNoExt, ~] = fileparts(files(k).name);
+    % 假设文件名就是数字 (如 "1.txt" -> 1)
+    file_IDs(k) = str2double(nameNoExt); 
+end
+
+% 获取排序后的索引 (从小到大)
+[sorted_IDs, sortIndex] = sort(file_IDs);
+
+% 使用排序索引重新排列 files 结构体数组
+% 现在的 sortedFiles 就是按 1.txt, 2.txt, 3.txt... 顺序排列的了
+sortedFiles = files(sortIndex);
+
+% =================================================================
+
+% 初始化结构体 (可选，但推荐)
+% 注意：如果你的最大ID是100，这里会自动扩展到100
+stations = struct('id', {}, 'position', {}, 'angle', {});
+
+disp('开始按顺序读取...');
+
+% 2. 遍历排序后的文件列表
+for k = 1:numFiles
+    % 获取文件信息
+    thisFile = sortedFiles(k);
+    fullFileName = fullfile(folder, thisFile.name);
+    
+    % 获取 ID (前面已经算过一次，但为了代码清晰再取一次，或者直接用 sorted_IDs(k))
+    currentID = sorted_IDs(k); 
+    
+    % 读取数据
+    xyz_data = load(fullFileName);
+    
+    % 容错处理：确保是一行向量
+    if size(xyz_data, 1) > 1
+        pos = xyz_data(1, 1:3);
+    else
+        pos = xyz_data(1, 1:3); % 假设数据本身就是行向量
+    end
+    
+    % ================= 关键步骤 =================
+    % 这里的下标使用 currentID，而不是 k
+    % 这样 station(1) 永远存放 1.txt 的数据，哪怕 1.txt 是第10个被读取的
+    % ===========================================
+    stations(currentID).id = currentID;
+    stations(currentID).position = pos;
+    stations(currentID).angle = deg2rad(20); 
+    
+    fprintf('已存入 stations(%d): 文件 %s, 坐标 [%.1f, ...]\n', ...
+        currentID, thisFile.name, pos(1));
+end
+
+disp('读取完成。');
+
+ 
+
+
 
 
 % P =18
@@ -173,3 +239,6 @@ if vis_ratio > 0
 else
     disp('不可见');
 end
+
+
+

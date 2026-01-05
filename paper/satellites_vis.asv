@@ -173,3 +173,37 @@ if vis_ratio > 0
 else
     disp('不可见');
 end
+
+
+
+% 1. 设置文件夹路径
+folder = 'C:\usrspace\stkfile\position\stationfile';
+
+% 2. 获取该文件夹下所有 txt 文件
+filePattern = fullfile(folder, '*.txt'); 
+files = dir(filePattern);
+
+% 初始化 stations 结构体数组 (养成好习惯，虽然不写也行)
+stations = struct('position', {}, 'angle', {}, 'id', {});
+
+% 3. 遍历文件
+for k = 1:length(files)
+    % --- 获取文件名并拼接完整路径 ---
+    baseFileName = files(k).name;
+    fullFileName = fullfile(folder, baseFileName);
+    
+    % --- 读取数据 ---
+    % 假设 txt 里只有一行 [x, y, z]
+    xyz_data = load(fullFileName); 
+    
+    % --- 存入结构体数组 ---
+    stations(k).id = k;                % 给个编号
+    stations(k).position = xyz_data;   % 存入坐标
+    stations(k).angle = deg2rad(20);   % 统一设置仰角 (或者根据文件名区分)
+    
+    fprintf('已读取第 %d 个站: %s\n', k, baseFileName);
+end
+
+% === 测试：如何使用读取后的数据 ===
+% 例如：访问第 2 个站的坐标
+% pos = stations(2).position;
