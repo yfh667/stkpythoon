@@ -64,6 +64,24 @@ if ~exist(outDir, 'dir')
     mkdir(outDir);
 end
 
+
+% ===== 按 "_S<number>" 的 number 排序：S1, S2, S3... =====
+tok = regexp(station_names, '_S(\d+)$', 'tokens', 'once');
+
+sId = nan(size(station_names));
+for k = 1:numel(station_names)
+    if ~isempty(tok{k})
+        sId(k) = str2double(tok{k}{1});
+    else
+        sId(k) = inf;   % 没有 _S数字 的放到最后
+    end
+end
+
+[~, idx] = sort(sId, 'ascend');
+station_names = station_names(idx);
+
+
+
 % --- 3. 循环生成每个地面站的文件 ---
 for i = 1:numberOfStations
     % 获取当前地面站名称 (例如 'BEIJIN1')

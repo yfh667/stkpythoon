@@ -129,3 +129,31 @@ end
 %     disp('不可见');
 % end
 %  我们已经完成测试，该模块正常工作
+
+
+
+
+% 
+% [x_m,y_m,z_m]=position.GetPositionxyz_read(root, 'qf_11', scenario.StartTime, scenario.StopTime, timestep)
+%    num_steps = length(x_m);
+
+%  station.position = [1074071.54059224	,5053109.3096214	,3728191.67582598]; 
+% station.angle = deg2rad(20); 
+% 
+% % 2. 构造卫星 (Satellite)
+ % ===== 2) 可见性遍历 =====
+% satellite.angle = deg2rad(45);   % 如果你的 Ground_Sat 需要卫星视场角/波束角等
+% 
+% N = numel(x_m);
+% for k = 1:N
+%     satellite.position = [x_m(k), y_m(k), z_m(k)];
+% 
+%     vis_ratio = module.Ground_Sat(station, satellite);
+%          fprintf('Visible  , ratio=%.4f\n',   vis_ratio);
+%     if vis_ratio > 0
+%         % 如果你想打印“时间”，这里先用步号；需要真实时间我下面也给你写法
+%         fprintf('Visible @step=%d, ratio=%.4f\n', k, vis_ratio);
+%     end
+% end
+%  
+ 

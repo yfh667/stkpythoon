@@ -1,7 +1,7 @@
 
 
 % 设置是否使用 STK Engine
-USE_ENGINE = false;
+USE_ENGINE = true;
 
 % 初始化 STK
 if USE_ENGINE
@@ -106,9 +106,9 @@ disp('读取完成。');
 
 % P =18
 % N = 36
-P =1
+P =18
 N = 36
- RAAN = 55
+ RAAN = 0
   height =561
 %  
 %  height =1066
@@ -172,12 +172,29 @@ sat.batchRenameSatellitesInSTK2(root,satellite_names)
 
 numberofsatellite = length(satellite_names)
 
-position = module.Get_Position()
+ 
 timestep = 1
-new_satellite_names =sat.getSatelliteNames(scenario);
+
+ 
+filepath =  'C:\usrspace\stkfile\position\test\1.xml'
+
+
+ 
+
+
+
+ 
+
+% Station_View_Result = module.Calculate_Constellation_Visibility(root, stations, scenario,filepath)
+
+Station_View_Result = module.Calculate_Constellation_Visibility_para(root, stations, scenario,filepath)
+
+
+
+
 
 % --- 生成带 baseRaan 标记的输出文件夹 ---
-baseOutDir = 'C:\usrspace\stkfile\position';
+baseOutDir = 'C:\usrspace\stkfile\position\test\1.xml';
 
  
 % 直接格式化为整数形式：例如 10 -> baseRaan_10
@@ -185,23 +202,15 @@ baseRaanTag = sprintf('baseRaan_%d', baseRaan);
 
 outDir = fullfile(baseOutDir, baseRaanTag);
 
+
+
 % 若文件夹不存在则创建
 if ~exist(outDir, 'dir')
     mkdir(outDir);
 end
 
  
-% --- 下面循环里生成每颗卫星的文件名 ---
-for i = 1:numberofsatellite
-    satellite1_name = new_satellite_names{i};
-
-    filename = sprintf('%d.xml', i);
-    pwd = fullfile(outDir, filename);
-
-    position.GetPositionxyz(root, satellite1_name, scenario.StartTime, scenario.StopTime, timestep, pwd,i);
-    
-    
-end
+ 
 
 
 
@@ -221,24 +230,5 @@ end
  
 
 
-
-[x_m,y_m,z_m]=position.GetPositionxyz_read(root, 'qf_11', scenario.StartTime, scenario.StopTime, timestep)
- station.position = [1216362.376, -4736251.855, 4081268.723]; 
-station.angle = deg2rad(20); 
-
-% 2. 构造卫星 (Satellite)
-satellite.position = [1938553.787, -5464462.851, 3700057.237]; 
-satellite.angle = deg2rad(45);
-
-% 3. 直接调用函数 (假设你的函数在 +module 包文件夹下，或者是一个类静态方法)
-vis_ratio = module.Ground_Sat(station, satellite);
-
-% 4. 输出结果
-if vis_ratio > 0
-    fprintf('可见! Ratio: %.4f\n', vis_ratio);
-else
-    disp('不可见');
-end
-
-
+ 
 
