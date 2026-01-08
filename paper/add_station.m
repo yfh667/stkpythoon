@@ -57,7 +57,7 @@ timestep = 1;
 % --- 2. 生成带 baseRaan 标记的输出文件夹 ---
 baseOutDir = 'C:\usrspace\stkfile\position';
 
-outDir = fullfile(baseOutDir, 'stationfile');
+outDir = fullfile(baseOutDir, 'paper1stationfile');
 
 % 若文件夹不存在则创建
 if ~exist(outDir, 'dir')

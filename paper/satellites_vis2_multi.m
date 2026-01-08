@@ -1,7 +1,7 @@
 
 
 % 设置是否使用 STK Engine
-USE_ENGINE = true;
+USE_ENGINE = false;
 
 % 初始化 STK
 if USE_ENGINE
@@ -15,22 +15,35 @@ else
 end
 
 
-
+NumDays = 20;                               % 仿真天数
 %设置senario的时间
 StartTime  =  '6 Jan 2025 00:00:00.000';
 
 
-% StopTime =  '7 Jan 2025 00:00:00.000';
 
-NumDays = 3;                               % 仿真天数
+dayIdx=0
+baseDT = datetime(StartTime, 'InputFormat','d MMM yyyy HH:mm:ss.SSS', 'Locale','en_US');
+dayStartDT = baseDT + days(dayIdx);
+    dayStopDT  = baseDT + days(dayIdx+1);
+
+StartTime = datestr(dayStartDT, 'dd mmm yyyy HH:MM:SS.FFF');
+StopTime  = datestr(dayStopDT,  'dd mmm yyyy HH:MM:SS.FFF');
 
 
-scenario = root.Children.New('eScenario','MATLAB_PredatorMission');
 
 
-% scenario.SetTimePeriod(StartTime,StopTime);
-% scenario.StartTime = StartTime;
-% scenario.StopTime = StopTime;
+    fprintf('\n===== Day %d/%d : %s -> %s =====\n', dayIdx+1, NumDays, StartTime, StopTime);
+
+    scenario = root.Children.New('eScenario','MATLAB_PredatorMission');
+    % 1) 设置当天 scenario 时间窗口
+    scenario.SetTimePeriod(StartTime, StopTime);
+    scenario.StartTime = StartTime;
+    scenario.StopTime  = StopTime;
+
+ 
+
+
+ 
 
 if USE_ENGINE
     % 在 USE_ENGINE 为 true 的情况下执行的逻辑
@@ -47,7 +60,7 @@ else
 end
 
 
-folder = 'C:\usrspace\stkfile\position\stationfile';
+folder = 'C:\usrspace\stkfile\position\paper1stationfile';
 
 % 1. 获取所有地面站文件
 files = dir(fullfile(folder, '*.txt'));
@@ -112,9 +125,7 @@ disp('读取完成。');
 
  
 
-
-
-
+   
 % P =18
 % N = 36
 
@@ -205,7 +216,7 @@ export = module.Export_Position_STK();
 read_file = module.Read_All_E_Files_XYZ();
 
 % 用 datetime 做“+1天”，避免手写日期字符串出错
-baseDT = datetime(StartTime, 'InputFormat','d MMM yyyy HH:mm:ss.SSS', 'Locale','en_US');
+% baseDT = datetime(StartTime, 'InputFormat','d MMM yyyy HH:mm:ss.SSS', 'Locale','en_US');
 
 
  for dayIdx = 0:(NumDays-1)
@@ -221,7 +232,10 @@ StopTime  = datestr(dayStopDT,  'dd mmm yyyy HH:MM:SS.FFF');
 
     fprintf('\n===== Day %d/%d : %s -> %s =====\n', dayIdx+1, NumDays, StartTime, StopTime);
 
-    % 1) 设置当天 scenario 时间窗口
+    
+%      cmd = sprintf('SetAnalysisTimePeriod * "%s" "%s"', StartTime, StopTime);
+     
+%     % 1) 设置当天 scenario 时间窗口
     scenario.SetTimePeriod(StartTime, StopTime);
     scenario.StartTime = StartTime;
     scenario.StopTime  = StopTime;
@@ -254,7 +268,12 @@ StopTime  = datestr(dayStopDT,  'dd mmm yyyy HH:MM:SS.FFF');
 
     % 5) 计算可见性（你原本的调用不变）
 %     filepath = 'C:\usrspace\stkfile\position\test\p36.xml';
+
+
     output_file_dir = fullfile(outDir, ['station_visible_satellites_' dayTag '.xml']);
+    
+    
+    
     Station_View_Result = module.Calculate_Constellation_Visibility_para2(stations, XYZ, output_file_dir);
 
  
