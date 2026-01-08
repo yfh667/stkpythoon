@@ -13,13 +13,24 @@ else
     app = actxserver('STK11.application');
     root = app.Personality2; 
 end
+
+
+
 %设置senario的时间
-StartTime  =  '7 Jan 2025 00:00:00.000';
-StopTime =  '8 Jan 2025 00:00:00.000';
+StartTime  =  '6 Jan 2025 00:00:00.000';
+
+
+% StopTime =  '7 Jan 2025 00:00:00.000';
+
+NumDays = 3;                               % 仿真天数
+
+
 scenario = root.Children.New('eScenario','MATLAB_PredatorMission');
-scenario.SetTimePeriod(StartTime,StopTime);
-scenario.StartTime = StartTime;
-scenario.StopTime = StopTime;
+
+
+% scenario.SetTimePeriod(StartTime,StopTime);
+% scenario.StartTime = StartTime;
+% scenario.StopTime = StopTime;
 
 if USE_ENGINE
     % 在 USE_ENGINE 为 true 的情况下执行的逻辑
@@ -106,12 +117,16 @@ disp('读取完成。');
 
 % P =18
 % N = 36
+
 P =18
+
+% N=36
 N = 36
- RAAN = 0
-  height =561
+
+ RAAN = 10.2
+%   height =561
 %  
-%  height =1066
+ height =1066
  Anomaly_base = 4.5
  
  baseRaan  = 0
@@ -169,45 +184,126 @@ satellite_names =sat.getSatelliteNames(scenario);
 
 sat.batchRenameSatellitesInSTK2(root,satellite_names)
 
-
-numberofsatellite = length(satellite_names)
+%  名字重新取一次
+satellite_names = sat.getSatelliteNames(scenario); % <-- 重取一次
+numberofsatellite = length(satellite_names);
 
  
 timestep = 1
 
  
-filepath =  'C:\usrspace\stkfile\position\test\1.xml'
-
-
- 
-
-
-
- 
-
-% Station_View_Result = module.Calculate_Constellation_Visibility(root, stations, scenario,filepath)
-
-Station_View_Result = module.Calculate_Constellation_Visibility_para(root, stations, scenario,filepath)
-
-
-
-
-
 % --- 生成带 baseRaan 标记的输出文件夹 ---
-baseOutDir = 'C:\usrspace\stkfile\position\test\1.xml';
+baseOutDir = 'C:\usrspace\stkfile\position\day_batches';
+if ~exist(baseOutDir, 'dir')
+    mkdir(baseOutDir);
+end
+ 
 
  
-% 直接格式化为整数形式：例如 10 -> baseRaan_10
-baseRaanTag = sprintf('baseRaan_%d', baseRaan);
+ 
+export = module.Export_Position_STK();
+read_file = module.Read_All_E_Files_XYZ();
 
-outDir = fullfile(baseOutDir, baseRaanTag);
+% 用 datetime 做“+1天”，避免手写日期字符串出错
+baseDT = datetime(StartTime, 'InputFormat','d MMM yyyy HH:mm:ss.SSS', 'Locale','en_US');
+
+
+ for dayIdx = 0:(NumDays-1)
+
+    dayStartDT = baseDT + days(dayIdx);
+    dayStopDT  = baseDT + days(dayIdx+1);
+
+StartTime = datestr(dayStartDT, 'dd mmm yyyy HH:MM:SS.FFF');
+StopTime  = datestr(dayStopDT,  'dd mmm yyyy HH:MM:SS.FFF');
 
 
 
-% 若文件夹不存在则创建
-if ~exist(outDir, 'dir')
-    mkdir(outDir);
-end
+
+    fprintf('\n===== Day %d/%d : %s -> %s =====\n', dayIdx+1, NumDays, StartTime, StopTime);
+
+    % 1) 设置当天 scenario 时间窗口
+    scenario.SetTimePeriod(StartTime, StopTime);
+    scenario.StartTime = StartTime;
+    scenario.StopTime  = StopTime;
+
+    % （可选）每一天开始时动画复位
+    if ~USE_ENGINE
+        try
+            root.ExecuteCommand('Animate * Reset');
+        catch
+        end
+    end
+
+    % 2) 当天输出目录：day_YYYYMMDD
+    dayTag = char(dayStartDT, 'yyyyMMdd');
+    outDir = fullfile(baseOutDir, ['day_' dayTag]);
+    if ~exist(outDir, 'dir')
+        mkdir(outDir);
+    end
+
+    output_folder = fullfile(outDir, 'satellite_pos');
+    if ~exist(output_folder, 'dir')
+        mkdir(output_folder);
+    end
+
+    % 3) 导出当天卫星位置（你原本的调用不变）
+    export.Export_Pos_Line(root, scenario, output_folder);
+
+    % 4) 读取当天 .e 文件（你原本的调用不变）
+    XYZ = read_file.Read_All_E_Files_XYZ_Serial(output_folder);
+
+    % 5) 计算可见性（你原本的调用不变）
+%     filepath = 'C:\usrspace\stkfile\position\test\p36.xml';
+    output_file_dir = fullfile(outDir, ['station_visible_satellites_' dayTag '.xml']);
+    Station_View_Result = module.Calculate_Constellation_Visibility_para2(stations, XYZ, output_file_dir);
+
+ 
+
+    % 7) 清理：防止内存/磁盘爆
+    clear XYZ Station_View_Result;
+
+    
+    
+    % （强烈建议）删掉当天的 .e 文件，磁盘会省很多
+%     try
+%         delete(fullfile(output_folder, '*.e'));
+%     catch
+%     end
+%     
+    
+    
+    
+
+ end
+
+
+ 
+% ====== 按天仿真结束 ======
+  
+
+
+
+%  Station_View_Result = module.Calculate_Constellation_Visibility2(root, stations, XYZ,filepath)
+ 
+% 
+% Station_View_Result = module.Calculate_Constellation_Visibility_para2(  stations, XYZ,filepath)
+% 
+%  
+
+
+ 
+
+
+
+
+%  
+%  root.ExecuteCommand('UnloadMulti / */Satellite/*');
+%  
+%    
+
+
+
+
 
  
  
