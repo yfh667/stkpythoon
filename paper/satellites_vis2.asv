@@ -108,8 +108,7 @@ disp('∂¡»°ÕÍ≥…°£');
 
  
 
-
-
+ 
 
 % P =18
 % N = 36
@@ -120,14 +119,12 @@ P =18
 N = 36
 
  RAAN = 10.2
-  height =561
+%   height =561
 %  
-%  height =1066
+ height =1066
  Anomaly_base = 4.5
  
  baseRaan  = 0
- 
- 
  
 for i = 1:P
     

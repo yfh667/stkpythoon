@@ -1,7 +1,7 @@
 
 
 % 设置是否使用 STK Engine
-USE_ENGINE = false;
+USE_ENGINE = true;
 
 % 初始化 STK
 if USE_ENGINE
@@ -60,7 +60,7 @@ else
 end
 
 
-folder = 'C:\usrspace\stkfile\position\paper1stationfile';
+folder = 'C:\usrspace\stkfile\position\stationfile';
 
 % 1. 获取所有地面站文件
 files = dir(fullfile(folder, '*.txt'));
@@ -135,9 +135,9 @@ P =18
 N = 36
 
  RAAN = 10.2
-%   height =561
+  height =561
 %  
- height =1066
+%  height =1066
  Anomaly_base = 4.5
  
  baseRaan  = 0

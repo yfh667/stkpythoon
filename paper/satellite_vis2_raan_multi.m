@@ -1,7 +1,7 @@
 
 
 % 设置是否使用 STK Engine
-USE_ENGINE = false;
+USE_ENGINE = true;
 
 % 初始化 STK
 if USE_ENGINE
@@ -15,18 +15,22 @@ else
 end
 
 
-
+ 
 %设置senario的时间
 StartTime  =  '6 Jan 2025 00:00:00.000';
-StopTime =  '7 Jan 2025 00:00:00.000';
+dayIdx=0
+baseDT = datetime(StartTime, 'InputFormat','d MMM yyyy HH:mm:ss.SSS', 'Locale','en_US');
+dayStartDT = baseDT + days(dayIdx);
+dayStopDT  = baseDT + days(dayIdx+1);
+StartTime = datestr(dayStartDT, 'dd mmm yyyy HH:MM:SS.FFF');
+StopTime  = datestr(dayStopDT,  'dd mmm yyyy HH:MM:SS.FFF');
 
+    scenario = root.Children.New('eScenario','MATLAB_PredatorMission');
+    % 1) 设置当天 scenario 时间窗口
+    scenario.SetTimePeriod(StartTime, StopTime);
+    scenario.StartTime = StartTime;
+    scenario.StopTime  = StopTime;
 
-
-
-scenario = root.Children.New('eScenario','MATLAB_PredatorMission');
-scenario.SetTimePeriod(StartTime,StopTime);
-scenario.StartTime = StartTime;
-scenario.StopTime = StopTime;
 
 if USE_ENGINE
     % 在 USE_ENGINE 为 true 的情况下执行的逻辑
@@ -108,28 +112,41 @@ disp('读取完成。');
 
  
 
-
-
-
-% P =18
-% N = 36
-
 P =18
 
-% N=36
 N = 36
 
  RAAN = 10.2
+ 
   height =561
-%  
-%  height =1066
+
  Anomaly_base = 4.5
  
- baseRaan  = 0
+
  
+timestep = 1
+
  
+% --- 生成带 baseRaan 标记的输出文件夹 ---
+baseOutDir = 'C:\usrspace\stkfile\position\differentraan';
+if ~exist(baseOutDir, 'dir')
+    mkdir(baseOutDir);
+end
  
-for i = 1:P
+export = module.Export_Position_STK();
+read_file = module.Read_All_E_Files_XYZ();
+
+% 用 datetime 做“+1天”，避免手写日期字符串出错
+% baseDT = datetime(StartTime, 'InputFormat','d MMM yyyy HH:mm:ss.SSS', 'Locale','en_US');
+
+baseRaan_LIST = [15, 55, 95, 135, 175, 215, 255, 295, 325];
+
+for baseRaan = baseRaan_LIST
+     
+
+ 
+for i = 1:P  
+    
     
     %=============== 
     % 1. 设置“种子卫星”参数
@@ -175,6 +192,7 @@ for i = 1:P
 end
 
 
+ 
 
 sat = module.sat();
 
@@ -182,68 +200,64 @@ satellite_names =sat.getSatelliteNames(scenario);
 
 sat.batchRenameSatellitesInSTK2(root,satellite_names)
 
+%  名字重新取一次
+satellite_names = sat.getSatelliteNames(scenario); % <-- 重取一次
+numberofsatellite = length(satellite_names);
 
-numberofsatellite = length(satellite_names)
+
+    % 2) 当天输出目录：day_YYYYMMDD
+    dayTag = sprintf('baseRaan_%d', baseRaan);
+    
+    outDir = fullfile(baseOutDir, [dayTag]);
+    if ~exist(outDir, 'dir')
+        mkdir(outDir);
+    end
+
+    output_folder = fullfile(outDir, 'satellite_pos');
+    if ~exist(output_folder, 'dir')
+        mkdir(output_folder);
+    end
+
+    % 3) 导出当天卫星位置（你原本的调用不变）
+    export.Export_Pos_Line(root, scenario, output_folder);
+
+     root.ExecuteCommand('UnloadMulti / */Satellite/*');
+    % 4) 读取当天 .e 文件（你原本的调用不变）
+    XYZ = read_file.Read_All_E_Files_XYZ_Serial(output_folder);
+
+    output_file_dir = fullfile(outDir, ['station_visible_satellites_' dayTag '.xml']);
+ 
+    Station_View_Result = module.Calculate_Constellation_Visibility_para2(stations, XYZ, output_file_dir);
+
+    clear XYZ Station_View_Result;
+
+
+ end
+
 
  
-timestep = 1
-
- 
-% --- 生成带 baseRaan 标记的输出文件夹 ---
-baseOutDir = 'C:\usrspace\stkfile\position\';
-
- 
-% 直接格式化为整数形式：例如 10 -> baseRaan_10
-baseRaanTag = sprintf('baseRaan_%d', baseRaan);
-
-outDir = fullfile(baseOutDir, baseRaanTag);
-
-
-% 若文件夹不存在则创建
-if ~exist(outDir, 'dir')
-    mkdir(outDir);
-end
-
-
-% filePath2 =   'C:\usrspace\stkfile\position\test\11.e'
-% 
-%  cmd = sprintf('ExportDataFile */Satellite/%s Ephemeris "%s" Type STK CoordSys Fixed TimeSteps 1.0',     satellite_names{1}, filePath2);
-%                
-%  root.ExecuteCommand(cmd);
-
-output_folder = fullfile(outDir, 'satellite_pos');
-
-if ~exist(output_folder, 'dir')
-    mkdir(output_folder);
-end
+% ====== 按天仿真结束 ======
+  
 
 
 
-
- export = module.Export_Position_STK()
- export.Export_Pos_Line(root,scenario,  output_folder)
-
- 
- read_file = module.Read_All_E_Files_XYZ()
- XYZ = read_file.Read_All_E_Files_XYZ_Serial(output_folder)
- 
- 
- output_file_dir = fullfile(outDir, ' station_visible_satellites_ '+baseRaanTag+'.xml');
- 
- filepath =  'C:\usrspace\stkfile\position\test\p36.xml'
 %  Station_View_Result = module.Calculate_Constellation_Visibility2(root, stations, XYZ,filepath)
  
 % 
-Station_View_Result = module.Calculate_Constellation_Visibility_para2(  stations, XYZ,filepath)
+% Station_View_Result = module.Calculate_Constellation_Visibility_para2(  stations, XYZ,filepath)
+% 
+%  
+
 
  
 
 
-% Unload / */Satellite/* 意思是从根路径卸载所有名为任意字符的卫星对象
- 
- root.ExecuteCommand('UnloadMulti / */Satellite/*');
-%    module.save_Station_View_Result_to_xml(filepath, Station_View_Result);
-   
+
+
+%  
+%  root.ExecuteCommand('UnloadMulti / */Satellite/*');
+%  
+%    
 
 
 
